@@ -1,6 +1,6 @@
 {
   "name": "variables-manager",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "license": "Apache-2.0 OR CC-BY-4.0",
   "description": "A manager for environments and variables. Non UI element that manages variables state and handle storage",
   "devDependencies": {
