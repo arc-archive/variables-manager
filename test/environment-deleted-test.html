@@ -1,12 +1,16 @@
 <!doctype html>
 <!--
 @license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+Copyright 2016 The Advanced REST client authors <arc@mulesoft.com>
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
 -->
 <html>
   <head>
@@ -17,8 +21,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script src="../../web-component-tester/browser.js"></script>
     <script src="../../iron-test-helpers/test-helpers.js"></script>
     <script src="../../iron-test-helpers/mock-interactions.js"></script>
-
-    <!-- Step 1: import the element to test -->
+    <script src="helper.js"></script>
     <link rel="import" href="../variables-manager.html">
     <link rel="import" href="../../arc-polyfills/arc-polyfills.html">
   </head>
@@ -31,50 +34,42 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </test-fixture>
 
     <script>
-    function fire(name, detail, node) {
-      var event = new CustomEvent(name, {
-        bubbles: true,
-        composed: true,
-        cancelable: true,
-        detail: detail
-      });
-      (node || document).dispatchEvent(event);
-      return event;
-    }
-
-    function deleteDatabase(name) {
-      return new Promise(function(resolve, reject) {
-        var request = window.indexedDB.deleteDatabase('_pouch_' + name);
-        request.onerror = function() {
-          reject(new Error('Unable to delete ' + name + ' database'));
-        };
-        request.onsuccess = function() {
-          resolve();
-        };
-      });
-    }
-    /* global fixture, assert, sinon */
-    suite('environment-deleted', function() {
+    /* global fixture, assert, sinon, VariablesTestHelper */
+    suite(VariablesTestHelper.suiteName('environment-deleted'), function() {
       var databaseRecordId;
       var element;
-      setup(function() {
-        return deleteDatabase('variables-environments')
+
+      suiteSetup(function(done) {
+        VariablesTestHelper.deleteDatabase('variables-environments')
         .then(function() {
-          return new PouchDB('variables-environments').post({
-            name: 'test'
-          });
+          return VariablesTestHelper.addEnvs('test');
         })
         .then(function(result) {
           databaseRecordId = result.id;
-          element = fixture('basic');
-          fire('selected-environment-changed', {
-            value: 'test'
-          });
+          done();
+        })
+        .catch(function(cause) {
+          done(new Error(cause.message));
         });
       });
 
+      setup(function(done) {
+        element = fixture('basic');
+        VariablesTestHelper.fire('selected-environment-changed', {
+          value: 'test'
+        });
+        var cb = function(e) {
+          if (e.detail.value === undefined || e.detail.environment !== 'test') {
+            return;
+          }
+          element.removeEventListener('variables-list-changed', cb);
+          done();
+        };
+        element.addEventListener('variables-list-changed', cb);
+      });
+
       test('The environment-deleted event is cancelled', function(done) {
-        var event = fire('environment-deleted', {
+        var event = VariablesTestHelper.fire('environment-deleted', {
           value: databaseRecordId
         });
         // it must be wrapped in event listener or another test will fail
@@ -83,142 +78,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.isTrue(event.defaultPrevented);
           done();
         });
-
       });
-
-      test('Fires environment-deleted event', function(done) {
-        element.addEventListener('environment-deleted', function() {
-          done();
-        });
-        fire('environment-deleted', {
-          value: databaseRecordId
-        });
-      });
-
-      test('Fired environment-deleted event is not cancellable', function(done) {
-        element.addEventListener('environment-deleted', function(e) {
-          assert.isFalse(e.cancelable);
-          done();
-        });
-        fire('environment-deleted', {
-          value: databaseRecordId
-        });
-      });
-    });
-
-    suite('deleteEnvironment()', function() {
-      var databaseRecordId;
-      var element;
-      setup(function() {
-        return Promise.all([deleteDatabase('variables-environments'), deleteDatabase('variables')])
-        .then(function() {
-          return new PouchDB('variables-environments').post({
-            name: 'test'
-          });
-        })
-        .then(function(result) {
-          databaseRecordId = result.id;
-          var db2 = new PouchDB('variables');
-          return Promise.all([db2.post({
-            variable: 'test',
-            value: 'some variable',
-            environment: 'test'
-          }),
-          db2.post({
-            variable: 'test-2',
-            value: 'some variable-2',
-            environment: 'test'
-          })]);
-        })
-        .then(function() {
-          element = fixture('basic');
-          fire('selected-environment-changed', {
-            value: 'test'
-          });
-        });
-      });
-
-      test('Should reject promise without ID', function() {
-        return element.deleteEnvironment()
-        .then(function() {
-          throw new Error('TEST');
-        })
-        .catch(function(cause) {
-          if (cause.message === 'TEST') {
-            throw new Error('Validation passed invalid input');
-          }
-        });
-      });
-
-      test('Should return new _rev for deleted item', function() {
-        return element.deleteEnvironment(databaseRecordId)
-        .then(function(result) {
-          assert.ok(result.rev);
-        });
-      });
-
-      test('Should return new _id for deleted item', function() {
-        return element.deleteEnvironment(databaseRecordId)
-        .then(function(result) {
-          assert.equal(result.value, databaseRecordId);
-        });
-      });
-
-      test('Should update environments property', function() {
-        return element.deleteEnvironment(databaseRecordId)
-        .then(function() {
-          assert.lengthOf(element.environments, 0);
-        });
-      });
-
-      test('Should fire environments-list-changed custom event', function() {
-        var spy = sinon.spy();
-        element.addEventListener('environments-list-changed', spy);
-        return element.deleteEnvironment(databaseRecordId)
-        .then(function() {
-          assert.isTrue(spy.called);
-        });
-      });
-
-      test('Should fire environment-deleted custom event', function() {
-        var spy = sinon.spy();
-        element.addEventListener('environment-deleted', spy);
-        return element.deleteEnvironment(databaseRecordId)
-        .then(function() {
-          assert.isTrue(spy.called);
-        });
-      });
-
-      test('The environment-deleted event should not be cancellable', function(done) {
-        element.addEventListener('environment-deleted', function(e) {
-          assert.isFalse(e.cancelable);
-          done();
-        });
-        fire('environment-deleted', {
-          value: databaseRecordId
-        });
-      });
-
-      test('Should set environment to default', function(done) {
-        element.addEventListener('selected-environment-changed', function(e) {
-          assert.equal(e.detail.value, 'default');
-          done();
-        });
-        fire('environment-deleted', {
-          value: databaseRecordId
-        });
-      });
-
-      test('Variables should be empty', function(done) {
-        element.addEventListener('selected-environment-changed', function() {
-          assert.isUndefined(element.variables);
-          done();
-        });
-        fire('environment-deleted', {
-          value: databaseRecordId
-        });
-      });
-
     });
     </script>
 
