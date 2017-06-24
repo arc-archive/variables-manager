@@ -15,12 +15,61 @@ the License.
 <link rel="import" href="../arc-polyfills/arc-polyfills.html">
 <link rel="import" href="../app-pouchdb/pouchdb.html">
 <!--
-`<variables-manager>` A manager for environments and variables. Non UI element that manages variables state and handle storage
+A manager for environments and variables. Non UI element that manages variables
+state and handle data storage.
 
 ### Example
 ```
 <variables-manager></variables-manager>
 ```
+
+This element is designed to work with browser's event system. That means that
+each operation can be done by dispatching [CustomEvent](https://developer.mozilla.org/en/docs/Web/API/CustomEvent).
+
+**Important** Events that request data update (create/update/delete) must be
+cancellable. Otherwise the element will not handle the event at all.
+
+When the update event is handled it is cancelled so 1) other managers that
+exists in the DOM and listens fo the same event will not execute change 2)
+after execution the manager dispatches the same event which is not cancellable.
+UI element and other relevant parts of the application should handle only the
+event that is not cancellable because it contains data **after** the update
+has been stored in the datastore.
+
+### Example
+```javascript
+// requesting to create an environment
+var event = new CustomEvent('environment-updated', {
+  bubbles: true,
+  composed: true,
+  cancelable: true,
+  detail: {
+    name: 'Test environment'
+  }
+});
+document.dispatchEvent(event);
+
+console.log(event.defaultPrevented); // true
+```
+The event requesting data change is cancelled and propagation of the
+event is stopped. The same script should listen for the same event to
+check for data update:
+
+```javascript
+window.addEventListener('environment-updated', function(e) {
+  if (e.cancelable) {
+    // This event requesting data change. We shouldn't be interested in this
+    // event.
+    return;
+  }
+  var environment = e.detail.value;
+  console.log(environment._id, environment._rev);
+});
+```
+
+Updated object will have updated `_rev` property and `_id`. This are
+[PouchDb](https://pouchdb.com/api.html) properties to identify data in the
+datastore.
 
 ### Styling
 
@@ -123,7 +172,8 @@ Polymer({
      */
     environment: {
       type: String,
-      value: 'default'
+      value: 'default',
+      observer: '_environmentChanged'
     },
     /**
      * List of available environments (except for "default").
@@ -147,13 +197,11 @@ Polymer({
   },
 
   observers: [
-    '_environmentChanged(environment)',
     '_environmentsChanged(environments.*)',
     '_variablesChanged(variables.*)'
   ],
 
   attached: function() {
-    this._environmentChanged(this.environment);
     this._updateEnvironmentsList();
     this._eventTarget = Polymer.dom(this).host || window;
     this.listen(this._eventTarget, 'selected-environment-changed', '_envChnageHandler');
@@ -241,8 +289,20 @@ Polymer({
    * This task is asynchronus.
    */
   _updateVariablesList: function() {
-    this.listVariables(this.environment)
+    var currentEnv = this.environment;
+    if (!currentEnv) {
+      return;
+    }
+    this.listVariables(currentEnv)
     .then(function(variables) {
+      if (currentEnv !== this.environment) {
+        // In some cases (changing environemnt right after initialization)
+        // this may actually happen. Especially on slow IE.
+        var msg = 'Skipping setting variables list. Environment changed ';
+        msg += 'from %s to %s';
+        console.info(msg, currentEnv, this.environemnt);
+        return;
+      }
       this.set('variables', variables);
     }.bind(this))
     .catch(function(cause) {
@@ -475,7 +535,11 @@ Polymer({
       });
       this.__updateEnvironmentItem(data);
       return data;
-    }.bind(this));
+    }.bind(this))
+    .catch(function(cause) {
+      this._handleException(cause);
+      throw new Error(cause.message);
+    });
   },
 
   /**

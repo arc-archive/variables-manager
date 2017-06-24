@@ -1,0 +1,175 @@
+<!doctype html>
+<!--
+@license
+Copyright 2016 The Advanced REST client authors <arc@mulesoft.com>
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../iron-test-helpers/test-helpers.js"></script>
+    <script src="../../iron-test-helpers/mock-interactions.js"></script>
+    <script src="helper.js"></script>
+    <link rel="import" href="../variables-manager.html">
+    <link rel="import" href="../../arc-polyfills/arc-polyfills.html">
+  </head>
+  <body>
+
+    <test-fixture id="basic">
+      <template>
+        <variables-manager></variables-manager>
+      </template>
+    </test-fixture>
+
+    <script>
+    /* global fixture, assert, sinon, VariablesTestHelper */
+    suite(VariablesTestHelper.suiteName('deleteEnvironment()'), function() {
+      var databaseRecordId;
+      var element;
+
+      suiteSetup(function(done) {
+        VariablesTestHelper.deleteAllDatabases()
+        .then(function() {
+          var vars = [{
+            variable: 'test',
+            value: 'some variable',
+            environment: 'test'
+          }, {
+            variable: 'test-2',
+            value: 'some variable-2',
+            environment: 'test'
+          }];
+          return VariablesTestHelper.addVars(vars);
+        })
+        .then(function() {
+          done();
+        })
+        .catch(function(cause) {
+          done(new Error(cause.message));
+        });
+      });
+
+      setup(function(done) {
+        element = fixture('basic');
+        var cbVars = function(e) {
+          if (e.detail.value === undefined || e.detail.environment !== 'test') {
+            return;
+          }
+          element.removeEventListener('variables-list-changed', cbVars);
+          done();
+        };
+        element.addEventListener('variables-list-changed', cbVars);
+
+        VariablesTestHelper.addEnvs('test')
+        .then(function(result) {
+          databaseRecordId = result.id;
+          return element.listEnvironments();
+        })
+        .then(function(envs) {
+          element.environments = envs;
+          VariablesTestHelper.fire('selected-environment-changed', {
+            value: 'test'
+          });
+        })
+        .catch(function(cause) {
+          done(new Error(cause.message));
+        });
+      });
+
+      test('Should return new _rev for deleted item', function() {
+        return element.deleteEnvironment(databaseRecordId)
+        .then(function(result) {
+          assert.ok(result.rev);
+        });
+      });
+
+      test('Should return new _id for deleted item', function() {
+        return element.deleteEnvironment(databaseRecordId)
+        .then(function(result) {
+          assert.equal(result.value, databaseRecordId);
+        });
+      });
+
+      test('Should update environments property', function() {
+        return element.deleteEnvironment(databaseRecordId)
+        .then(function() {
+          assert.lengthOf(element.environments, 0);
+        });
+      });
+
+      test('Should fire environments-list-changed custom event', function() {
+        var spy = sinon.spy();
+        element.addEventListener('environments-list-changed', spy);
+        return element.deleteEnvironment(databaseRecordId)
+        .then(function() {
+          assert.isTrue(spy.called);
+        });
+      });
+
+      test('Should fire environment-deleted custom event', function() {
+        var spy = sinon.spy();
+        element.addEventListener('environment-deleted', spy);
+        return element.deleteEnvironment(databaseRecordId)
+        .then(function() {
+          assert.isTrue(spy.called);
+        });
+      });
+
+      test('The environment-deleted event should not be cancellable', function(done) {
+        element.addEventListener('environment-deleted', function(e) {
+          assert.isFalse(e.cancelable);
+          done();
+        });
+        VariablesTestHelper.fire('environment-deleted', {
+          value: databaseRecordId
+        });
+      });
+
+      test('Should set environment to default', function(done) {
+        element.addEventListener('selected-environment-changed', function(e) {
+          assert.equal(e.detail.value, 'default');
+          done();
+        });
+        VariablesTestHelper.fire('environment-deleted', {
+          value: databaseRecordId
+        });
+      });
+
+      test('Variables should be empty', function(done) {
+        element.addEventListener('selected-environment-changed', function() {
+          assert.isUndefined(element.variables);
+          done();
+        });
+        VariablesTestHelper.fire('environment-deleted', {
+          value: databaseRecordId
+        });
+      });
+      // Should be last, it leases an environment in the data store.
+      test('Should reject promise without ID', function() {
+        return element.deleteEnvironment()
+        .then(function() {
+          throw new Error('TEST');
+        })
+        .catch(function(cause) {
+          if (cause.message === 'TEST') {
+            throw new Error('Validation passed invalid input');
+          }
+        });
+      });
+    });
+    </script>
+
+  </body>
+</html>

@@ -17,11 +17,11 @@ the License.
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
 
-    <script src="helper.js"></script>
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
     <script src="../../iron-test-helpers/test-helpers.js"></script>
     <script src="../../iron-test-helpers/mock-interactions.js"></script>
+    <script src="helper.js"></script>
     <link rel="import" href="../variables-manager.html">
     <link rel="import" href="../../arc-polyfills/arc-polyfills.html">
   </head>
@@ -34,17 +34,23 @@ the License.
     </test-fixture>
 
     <script>
-    /* global fixture, assert, sinon, VariablesTestHelper */
-    suite(VariablesTestHelper.suiteName('environment-updated'), function() {
-      var databaseRecordId;
-
+    /* global fixture, assert, sinon */
+    suite(VariablesTestHelper.suiteName('selected-environment-changed with values'), function() {
       suiteSetup(function(done) {
         VariablesTestHelper.deleteAllDatabases()
         .then(function() {
-          return VariablesTestHelper.addEnvs('test');
+          var vars = [{
+            variable: 'test',
+            value: 'some variable',
+            environment: 'test'
+          }, {
+            variable: 'test-2',
+            value: 'some variable-2',
+            environment: 'test-2'
+          }];
+          return VariablesTestHelper.addVars(vars);
         })
-        .then(function(result) {
-          databaseRecordId = result.id;
+        .then(function() {
           done();
         })
         .catch(function(cause) {
@@ -53,30 +59,36 @@ the License.
       });
 
       var element;
-      setup(function(done) {
+      setup(function() {
         element = fixture('basic');
+      });
+
+      test('The variables-list-changed returns one item', function(done) {
+        element.addEventListener('variables-list-changed', function(e) {
+          if (!e.detail.value.length) {
+            return;
+          }
+          assert.lengthOf(e.detail.value, 1);
+          done();
+        });
         VariablesTestHelper.fire('selected-environment-changed', {
           value: 'test'
         });
-        var cb = function(e) {
-          if (e.detail.value === undefined || e.detail.environment !== 'test') {
-            return;
-          }
-          element.removeEventListener('variables-list-changed', cb);
-          done();
-        };
-        element.addEventListener('variables-list-changed', cb);
       });
 
-      test('The environment-updated event is cancelled', function(done) {
-        var event = VariablesTestHelper.fire('environment-updated', {
-          value: {
-            name: 'test2',
-            _id: databaseRecordId
+      test('The variables-list-changed event has stored value', function(done) {
+        element.addEventListener('variables-list-changed', function(e) {
+          if (!e.detail.value.length) {
+            return;
           }
+          var value = e.detail.value[0];
+          assert.equal(value.variable, 'test');
+          assert.equal(value.value, 'some variable');
+          done();
         });
-        assert.isTrue(event.defaultPrevented);
-        done();
+        VariablesTestHelper.fire('selected-environment-changed', {
+          value: 'test'
+        });
       });
     });
     </script>

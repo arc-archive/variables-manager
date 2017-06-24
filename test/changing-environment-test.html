@@ -35,48 +35,44 @@ the License.
 
     <script>
     /* global fixture, assert, sinon, VariablesTestHelper */
-    suite(VariablesTestHelper.suiteName('environment-updated'), function() {
-      var databaseRecordId;
-
-      suiteSetup(function(done) {
-        VariablesTestHelper.deleteAllDatabases()
-        .then(function() {
-          return VariablesTestHelper.addEnvs('test');
-        })
-        .then(function(result) {
-          databaseRecordId = result.id;
-          done();
-        })
-        .catch(function(cause) {
-          done(new Error(cause.message));
-        });
+    suite(VariablesTestHelper.suiteName('Changing environment'), function() {
+      suiteSetup(function() {
+        return VariablesTestHelper.deleteAllDatabases();
       });
 
       var element;
-      setup(function(done) {
+      setup(function() {
         element = fixture('basic');
+      });
+
+      test('Should set an environment', function() {
         VariablesTestHelper.fire('selected-environment-changed', {
           value: 'test'
         });
-        var cb = function(e) {
-          if (e.detail.value === undefined || e.detail.environment !== 'test') {
-            return;
-          }
-          element.removeEventListener('variables-list-changed', cb);
-          done();
-        };
-        element.addEventListener('variables-list-changed', cb);
+        assert.equal(element.environment, 'test');
       });
 
-      test('The environment-updated event is cancelled', function(done) {
-        var event = VariablesTestHelper.fire('environment-updated', {
-          value: {
-            name: 'test2',
-            _id: databaseRecordId
-          }
+      test('Should not fire selected-environment-changed', function() {
+        var spy = sinon.spy();
+        element.addEventListener('selected-environment-changed', spy);
+        VariablesTestHelper.fire('selected-environment-changed', {
+          value: 'test'
         });
-        assert.isTrue(event.defaultPrevented);
-        done();
+        assert.isFalse(spy.called);
+      });
+
+      test('Should fire variables-list-changed', function(done) {
+        var called = false;
+        element.addEventListener('variables-list-changed', function() {
+          if (called) {
+            return;
+          }
+          called = true;
+          done();
+        });
+        VariablesTestHelper.fire('selected-environment-changed', {
+          value: 'test'
+        });
       });
     });
     </script>

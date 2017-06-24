@@ -1,12 +1,16 @@
 <!doctype html>
 <!--
 @license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+Copyright 2016 The Advanced REST client authors <arc@mulesoft.com>
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
 -->
 <html>
   <head>
@@ -17,8 +21,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script src="../../web-component-tester/browser.js"></script>
     <script src="../../iron-test-helpers/test-helpers.js"></script>
     <script src="../../iron-test-helpers/mock-interactions.js"></script>
-
-    <!-- Step 1: import the element to test -->
+    <script src="helper.js"></script>
     <link rel="import" href="../variables-manager.html">
     <link rel="import" href="../../arc-polyfills/arc-polyfills.html">
   </head>
@@ -31,32 +34,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </test-fixture>
 
     <script>
-    function fire(name, detail, node) {
-      var event = new CustomEvent(name, {
-        bubbles: true,
-        composed: true,
-        cancelable: true,
-        detail: detail
-      });
-      (node || document).dispatchEvent(event);
-      return event;
-    }
-
-    function deleteDatabase(name) {
-      return new Promise(function(resolve, reject) {
-        var request = window.indexedDB.deleteDatabase('_pouch_' + name);
-        request.onerror = function() {
-          reject(new Error('Unable to delete ' + name + ' database'));
-        };
-        request.onsuccess = function() {
-          resolve();
-        };
-      });
-    }
     /* global fixture, assert, sinon */
-    suite('selected-environment-changed', function() {
-      suiteSetup(function() {
-        return Promise.all([deleteDatabase('variables-environments'), deleteDatabase('variables')]);
+    suite(VariablesTestHelper.suiteName('selected-environment-changed'), function() {
+
+      suiteSetup(function(done) {
+        VariablesTestHelper.deleteAllDatabases()
+        .then(function() {
+          done();
+        })
+        .catch(function(cause) {
+          done(new Error(cause.message));
+        });
       });
 
       var element;
@@ -65,7 +53,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       });
 
       test('Should set an environment', function() {
-        fire('selected-environment-changed', {
+        VariablesTestHelper.fire('selected-environment-changed', {
           value: 'test'
         });
         assert.equal(element.environment, 'test');
@@ -74,7 +62,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       test('Should not fire selected-environment-changed', function() {
         var spy = sinon.spy();
         element.addEventListener('selected-environment-changed', spy);
-        fire('selected-environment-changed', {
+        VariablesTestHelper.fire('selected-environment-changed', {
           value: 'test'
         });
         assert.isFalse(spy.called);
@@ -89,64 +77,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           called = true;
           done();
         });
-        fire('selected-environment-changed', {
-          value: 'test'
-        });
-      });
-    });
-
-    suite('selected-environment-changed with values', function() {
-      suiteSetup(function() {
-        return Promise.all([deleteDatabase('variables-environments'), deleteDatabase('variables')])
-        .then(function() {
-          return new PouchDB('variables-environments').post({
-            name: 'test'
-          });
-        })
-        .then(function() {
-          var db2 = new PouchDB('variables');
-          return Promise.all([db2.post({
-            variable: 'test',
-            value: 'some variable',
-            environment: 'test'
-          }),
-          db2.post({
-            variable: 'test-2',
-            value: 'some variable-2',
-            environment: 'test-2'
-          })]);
-        });
-      });
-
-      var element;
-      setup(function() {
-        element = fixture('basic');
-      });
-
-      test('The variables-list-changed returns one item', function(done) {
-        element.addEventListener('variables-list-changed', function(e) {
-          if (!e.detail.value.length) {
-            return;
-          }
-          assert.lengthOf(e.detail.value, 1);
-          done();
-        });
-        fire('selected-environment-changed', {
-          value: 'test'
-        });
-      });
-
-      test('The variables-list-changed event has stored value', function(done) {
-        element.addEventListener('variables-list-changed', function(e) {
-          if (!e.detail.value.length) {
-            return;
-          }
-          var value = e.detail.value[0];
-          assert.equal(value.variable, 'test');
-          assert.equal(value.value, 'some variable');
-          done();
-        });
-        fire('selected-environment-changed', {
+        VariablesTestHelper.fire('selected-environment-changed', {
           value: 'test'
         });
       });
