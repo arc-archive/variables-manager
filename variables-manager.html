@@ -123,7 +123,8 @@ Polymer({
      */
     environment: {
       type: String,
-      value: 'default'
+      value: 'default',
+      observer: '_environmentChanged'
     },
     /**
      * List of available environments (except for "default").
@@ -147,13 +148,11 @@ Polymer({
   },
 
   observers: [
-    '_environmentChanged(environment)',
     '_environmentsChanged(environments.*)',
     '_variablesChanged(variables.*)'
   ],
 
   attached: function() {
-    this._environmentChanged(this.environment);
     this._updateEnvironmentsList();
     this._eventTarget = Polymer.dom(this).host || window;
     this.listen(this._eventTarget, 'selected-environment-changed', '_envChnageHandler');
