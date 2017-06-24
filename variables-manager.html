@@ -71,6 +71,126 @@ Updated object will have updated `_rev` property and `_id`. This are
 [PouchDb](https://pouchdb.com/api.html) properties to identify data in the
 datastore.
 
+## Events API
+
+### selected-environment-changed
+
+Changes currently selected environment in the manager. This event doesn't have
+to be cancelable. The change trigges request to read variables for new
+environment so `variables-list-changed` event is expected to be fired.
+
+#### Properties
+`value` (`string`) - Selected environment name
+
+### environment-updated
+
+Updates or creates new environment. This event have to be cancelable.
+If the `value` property contains `_id` then the object will be updated.
+
+#### Properties
+`value` (`object`) - Environment datastore object.
+
+### environment-deleted
+
+Deletes an environment. This event have to be cancelable.
+
+#### Properties
+`value` (`string`) - The `_id` property of the environment object.
+
+### environment-current
+
+Request for current environment information. This event have to be cancelable.
+The manager will set a `value` property on the details object so the event
+source should read it after the event is dispatched.
+
+Note: you have to set a detail object or otherwise it won't be created after
+the event is dispatched.
+
+```javascript
+var event = new CustomEvent('environment-current', {
+  bubbles: true,
+  composed: true,
+  cancelable: true,
+  detail: {}
+});
+document.dispatchEvent(event);
+if (event.defaultPrevented) {
+  console.log(event.detail.value); // Current environment
+}
+```
+
+### environment-list
+
+Request for current environments list information. This event have to be
+cancelable. The manager will set a `value` property on the details object so
+the event source should read it after the event is dispatched.
+
+Note: you have to set a detail object or otherwise it won't be created after
+the event is dispatched.
+
+Note: The value contains a list of user created environments (without
+the `default` environment). Therefore it can be `undefined` or empty array.
+
+```javascript
+var event = new CustomEvent('environment-list', {
+  bubbles: true,
+  composed: true,
+  cancelable: true,
+  detail: {}
+});
+document.dispatchEvent(event);
+if (event.defaultPrevented) {
+  console.log(event.detail.value); // All available environments.
+}
+```
+
+### variable-updated
+
+Updates or creates new variable. This event have to be cancelable.
+If the `value` property contains `_id` then the object will be updated.
+
+#### Properties
+`value` (`object`) - Variable datastore object.
+
+The object must contain `variable` (variable name), `value` (it's body) and
+`environment` properties. Otherwise an error will be throw.
+
+### variable-deleted
+
+Deletes an environment. This event have to be cancelable.
+
+#### Properties
+`value` (`string`) - The `_id` property of the variable object.
+
+### variable-list
+
+Request for current variables list information. This event have to be
+cancelable. The manager will set a `value` property on the details object so
+the event source should read it after the event is dispatched.
+
+Note: you have to set a detail object or otherwise it won't be created after
+the event is dispatched.
+
+Note: The value contains a list of user created variables. Therefore it can be
+`undefined` or empty array.
+
+Note: Additional `environment` property is set to the `detail` object to indicate
+to which environment the variables belongs.
+
+```javascript
+var event = new CustomEvent('variable-list', {
+  bubbles: true,
+  composed: true,
+  cancelable: true,
+  detail: {}
+});
+document.dispatchEvent(event);
+if (event.defaultPrevented) {
+  console.log(event.detail.value); // All available variables.
+  console.log(event.detail.environment); // Environment name.
+}
+```
+
 ### Styling
 
 The element doesn't provide any UI.
@@ -212,7 +332,7 @@ Polymer({
 
     this.listen(this._eventTarget, 'variable-updated', '_varUpdateHandler');
     this.listen(this._eventTarget, 'variable-deleted', '_varDeleteHandler');
-    this.listen(this._eventTarget, 'variable-list-current', '_varListHandler');
+    this.listen(this._eventTarget, 'variable-list', '_varListHandler');
   },
 
   detached: function() {
@@ -227,7 +347,7 @@ Polymer({
 
     this.unlisten(this._eventTarget, 'variable-updated', '_varUpdateHandler');
     this.unlisten(this._eventTarget, 'variable-deleted', '_varDeleteHandler');
-    this.unlisten(this._eventTarget, 'variable-list-current', '_varListHandler');
+    this.unlisten(this._eventTarget, 'variable-list', '_varListHandler');
   },
 
   /**
@@ -714,7 +834,7 @@ Polymer({
     this.deleteVariable(e.detail.value, e);
   },
   /**
-   * A handler for the `variable-list-current` custom event.
+   * A handler for the `variable-list` custom event.
    *
    * Adds a `value` propety of the event `detail` object with the array of the
    * variables restored for current environment. Each item is a PouchDb data
@@ -733,7 +853,7 @@ Polymer({
    * List of properties added to the detail object is consistent with the
    * `variables-list-changed` event fired by this event.
    *
-   * The `variable-list-current` custom event should be cancellable or the event
+   * The `variable-list` custom event should be cancellable or the event
    * won't be handled at all. It's to prohibit handling the event by many
    * managers (if more than one is in the DOM).
    */
