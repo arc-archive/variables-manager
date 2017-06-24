@@ -240,8 +240,20 @@ Polymer({
    * This task is asynchronus.
    */
   _updateVariablesList: function() {
-    this.listVariables(this.environment)
+    var currentEnv = this.environment;
+    if (!currentEnv) {
+      return;
+    }
+    this.listVariables(currentEnv)
     .then(function(variables) {
+      if (currentEnv !== this.environment) {
+        // In some cases (changing environemnt right after initialization)
+        // this may actually happen. Especially on slow IE.
+        var msg = 'Skipping setting variables list. Environment changed ';
+        msg += 'from %s to %s';
+        console.info(msg, currentEnv, this.environemnt);
+        return;
+      }
       this.set('variables', variables);
     }.bind(this))
     .catch(function(cause) {
