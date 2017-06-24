@@ -332,7 +332,7 @@ Polymer({
 
     this.listen(this._eventTarget, 'variable-updated', '_varUpdateHandler');
     this.listen(this._eventTarget, 'variable-deleted', '_varDeleteHandler');
-    this.listen(this._eventTarget, 'variable-list-current', '_varListHandler');
+    this.listen(this._eventTarget, 'variable-list', '_varListHandler');
   },
 
   detached: function() {
@@ -347,7 +347,7 @@ Polymer({
 
     this.unlisten(this._eventTarget, 'variable-updated', '_varUpdateHandler');
     this.unlisten(this._eventTarget, 'variable-deleted', '_varDeleteHandler');
-    this.unlisten(this._eventTarget, 'variable-list-current', '_varListHandler');
+    this.unlisten(this._eventTarget, 'variable-list', '_varListHandler');
   },
 
   /**
@@ -834,7 +834,7 @@ Polymer({
     this.deleteVariable(e.detail.value, e);
   },
   /**
-   * A handler for the `variable-list-current` custom event.
+   * A handler for the `variable-list` custom event.
    *
    * Adds a `value` propety of the event `detail` object with the array of the
    * variables restored for current environment. Each item is a PouchDb data
@@ -853,7 +853,7 @@ Polymer({
    * List of properties added to the detail object is consistent with the
    * `variables-list-changed` event fired by this event.
    *
-   * The `variable-list-current` custom event should be cancellable or the event
+   * The `variable-list` custom event should be cancellable or the event
    * won't be handled at all. It's to prohibit handling the event by many
    * managers (if more than one is in the DOM).
    */
