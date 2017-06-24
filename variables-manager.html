@@ -373,6 +373,9 @@ Polymer({
    * Fires a `environments-list-changed` custom event.
    */
   _environmentsChanged: function(record) {
+    if (this._cancelEnvironmentsChangeEvent) {
+      return;
+    }
     var value = record && record.base;
     this.fire('environments-list-changed', {
       value: value
@@ -383,6 +386,9 @@ Polymer({
    * Fires a `variables-list-changed` custom event.
    */
   _variablesChanged: function(record) {
+    if (this._cancelVariablesChangeEvent) {
+      return;
+    }
     var value = record && record.base;
     this.fire('variables-list-changed', {
       value: value,
@@ -670,8 +676,10 @@ Polymer({
    */
   __updateEnvironmentItem: function(data) {
     var envs = this.environments;
+    this._cancelEnvironmentsChangeEvent = true;
     if (!envs) {
       this.set('environments', [data]);
+      this._cancelEnvironmentsChangeEvent = false;
       return;
     }
     var index = envs.findIndex(function(item) {
@@ -682,6 +690,7 @@ Polymer({
     } else {
       this.push('environments', data);
     }
+    this._cancelEnvironmentsChangeEvent = false;
   },
 
   /**
@@ -728,7 +737,9 @@ Polymer({
           return item._id === id;
         });
         if (~index) {
+          this._cancelEnvironmentsChangeEvent = true;
           this.splice('environments', index, 1);
+          this._cancelEnvironmentsChangeEvent = false;
         }
       }
       var detail = {
@@ -941,9 +952,11 @@ Polymer({
     if (data.environment !== this.environment) {
       return;
     }
+    this._cancelVariablesChangeEvent = true;
     var vars = this.variables;
     if (!vars) {
       this.set('variables', [data]);
+      this._cancelVariablesChangeEvent = false;
       return;
     }
     var index = vars.findIndex(function(item) {
@@ -954,6 +967,7 @@ Polymer({
     } else {
       this.push('variables', data);
     }
+    this._cancelVariablesChangeEvent = false;
   },
   /**
    * Deletes a variable from the data store.
@@ -996,7 +1010,9 @@ Polymer({
           return item._id === id;
         });
         if (~index) {
+          this._cancelVariablesChangeEvent = true;
           this.splice('variables', index, 1);
+          this._cancelVariablesChangeEvent = false;
         }
       }
       var detail = {
