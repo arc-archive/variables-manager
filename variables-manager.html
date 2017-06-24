@@ -474,7 +474,11 @@ Polymer({
       });
       this.__updateEnvironmentItem(data);
       return data;
-    }.bind(this));
+    }.bind(this))
+    .catch(function(cause) {
+      this._handleException(cause);
+      throw new Error(cause.message);
+    });
   },
 
   /**
