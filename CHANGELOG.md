@@ -1,3 +1,17 @@
+<a name="0.1.2"></a>
+## [0.1.2](https://github.com/advanced-rest-client/variables-manager/compare/0.1.1...v0.1.2) (2017-06-24)
+
+
+### Breaking
+
+* Renamed `variable-list-current` event to `variable-list`. ([9d67c466bc101b2183e95562eef151e6492e1e24](https://github.com/advanced-rest-client/variables-manager/commit/9d67c466bc101b2183e95562eef151e6492e1e24))
+
+### Docs
+
+* Updated events API documentation. ([c03c8d15327d3e349e3b63c87fd401243c83690e](https://github.com/advanced-rest-client/variables-manager/commit/c03c8d15327d3e349e3b63c87fd401243c83690e))
+
+
+
 <a name="0.1.1"></a>
 ## 0.1.1 (2017-06-24)
 
