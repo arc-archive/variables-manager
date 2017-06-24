@@ -33,7 +33,10 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
     "paper-input": "PolymerElements/paper-input#^1.1.24",
     "paper-button": "PolymerElements/paper-button#^1.0.15",
-    "iron-form": "PolymerElements/iron-form#^1.1.4"
+    "iron-form": "PolymerElements/iron-form#^1.1.4",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.5.1",
+    "paper-listbox": "PolymerElements/paper-listbox#^1.1.3",
+    "paper-item": "PolymerElements/paper-item#^1.2.2"
   },
   "ignore": [
     "**/.*",

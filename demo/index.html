@@ -19,6 +19,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="../../paper-input/paper-input.html">
   <link rel="import" href="../../paper-button/paper-button.html">
   <link rel="import" href="../../iron-form/iron-form.html">
+  <link rel="import" href="../../paper-dropdown-menu/paper-dropdown-menu.html">
+  <link rel="import" href="../../paper-listbox/paper-listbox.html">
+  <link rel="import" href="../../paper-item/paper-item.html">
   <link rel="import" href="../variables-manager.html">
 
   <style is="custom-style" include="demo-pages-shared-styles">
@@ -73,18 +76,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <h4>Remove environment</h4>
         <form is="iron-form" id="removeEnv">
-          <select name="name">
-            <template is="dom-repeat" items="[[environments]]"><option value$="[[item.name]]">[[item.name]]</option></template>
-          </select>
+          <paper-dropdown-menu name="name" label="Select environment">
+            <paper-listbox class="dropdown-content" attr-for-selected="value">
+              <template is="dom-repeat" items="[[environments]]">
+                <paper-item value$="[[item.name]]">[[item.name]]</paper-item>
+              </template>
+            </paper-listbox>
+          </paper-dropdown-menu>
           <paper-button on-tap="removeEnv">Remove environment</paper-button>
         </form>
 
         <h4>Select environment</h4>
         <form is="iron-form" id="selectEnv">
-          <select name="name">
-            <option value="default">Default</option>
-            <template is="dom-repeat" items="[[environments]]"><option value$="[[item.name]]">[[item.name]]</option></template>
-          </select>
+          <paper-dropdown-menu name="name" label="Select environment">
+            <paper-listbox class="dropdown-content" attr-for-selected="value">
+              <paper-item value="default">Default</paper-item>
+              <template is="dom-repeat" items="[[environments]]">
+                <paper-item value$="[[item.name]]">[[item.name]]</paper-item>
+              </template>
+            </paper-listbox>
+          </paper-dropdown-menu>
           <paper-button on-tap="selectEnv">Select environment</paper-button>
         </form>
 
@@ -107,17 +118,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <template is="dom-if" if="[[hasVariables]]">
           <h4>Remove variable</h4>
           <form is="iron-form" id="removeVar">
-            <select name="variable">
-              <template is="dom-repeat" items="[[variables]]"><option value$="[[item.variable]]">[[item.variable]]</option></template>
-            </select>
+            <paper-dropdown-menu name="variable" label="Select variable">
+              <paper-listbox class="dropdown-content" attr-for-selected="value">
+                <template is="dom-repeat" items="[[variables]]">
+                  <paper-item value$="[[item.variable]]">[[item.variable]]</paper-item>
+                </template>
+              </paper-listbox>
+            </paper-dropdown-menu>
             <paper-button on-tap="removeVar">Remove variable</paper-button>
           </form>
 
           <h4>Select variable</h4>
           <form is="iron-form" id="selectVar">
-            <select name="variable">
-              <template is="dom-repeat" items="[[variables]]"><option value$="[[item.variable]]">[[item.variable]]</option></template>
-            </select>
+            <paper-dropdown-menu name="variable" label="Select variable">
+              <paper-listbox class="dropdown-content" attr-for-selected="value">
+                <template is="dom-repeat" items="[[variables]]">
+                  <paper-item value$="[[item.variable]]">[[item.variable]]</paper-item>
+                </template>
+              </paper-listbox>
+            </paper-dropdown-menu>
             <paper-button on-tap="selectVar">Select variable</paper-button>
           </form>
         </template>
