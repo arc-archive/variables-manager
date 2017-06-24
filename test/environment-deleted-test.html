@@ -1,0 +1,226 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../iron-test-helpers/test-helpers.js"></script>
+    <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+    <!-- Step 1: import the element to test -->
+    <link rel="import" href="../variables-manager.html">
+    <link rel="import" href="../../arc-polyfills/arc-polyfills.html">
+  </head>
+  <body>
+
+    <test-fixture id="basic">
+      <template>
+        <variables-manager></variables-manager>
+      </template>
+    </test-fixture>
+
+    <script>
+    function fire(name, detail, node) {
+      var event = new CustomEvent(name, {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        detail: detail
+      });
+      (node || document).dispatchEvent(event);
+      return event;
+    }
+
+    function deleteDatabase(name) {
+      return new Promise(function(resolve, reject) {
+        var request = window.indexedDB.deleteDatabase('_pouch_' + name);
+        request.onerror = function() {
+          reject(new Error('Unable to delete ' + name + ' database'));
+        };
+        request.onsuccess = function() {
+          resolve();
+        };
+      });
+    }
+    /* global fixture, assert, sinon */
+    suite('environment-deleted', function() {
+      var databaseRecordId;
+      var element;
+      setup(function() {
+        return deleteDatabase('variables-environments')
+        .then(function() {
+          return new PouchDB('variables-environments').post({
+            name: 'test'
+          });
+        })
+        .then(function(result) {
+          databaseRecordId = result.id;
+          element = fixture('basic');
+          fire('selected-environment-changed', {
+            value: 'test'
+          });
+        });
+      });
+
+      test('The environment-deleted event is cancelled', function(done) {
+        var event = fire('environment-deleted', {
+          value: databaseRecordId
+        });
+        // it must be wrapped in event listener or another test will fail
+        // because this would still running.
+        element.addEventListener('environment-deleted', function() {
+          assert.isTrue(event.defaultPrevented);
+          done();
+        });
+
+      });
+
+      test('Fires environment-deleted event', function(done) {
+        element.addEventListener('environment-deleted', function() {
+          done();
+        });
+        fire('environment-deleted', {
+          value: databaseRecordId
+        });
+      });
+
+      test('Fired environment-deleted event is not cancellable', function(done) {
+        element.addEventListener('environment-deleted', function(e) {
+          assert.isFalse(e.cancelable);
+          done();
+        });
+        fire('environment-deleted', {
+          value: databaseRecordId
+        });
+      });
+    });
+
+    suite('deleteEnvironment()', function() {
+      var databaseRecordId;
+      var element;
+      setup(function() {
+        return Promise.all([deleteDatabase('variables-environments'), deleteDatabase('variables')])
+        .then(function() {
+          return new PouchDB('variables-environments').post({
+            name: 'test'
+          });
+        })
+        .then(function(result) {
+          databaseRecordId = result.id;
+          var db2 = new PouchDB('variables');
+          return Promise.all([db2.post({
+            variable: 'test',
+            value: 'some variable',
+            environment: 'test'
+          }),
+          db2.post({
+            variable: 'test-2',
+            value: 'some variable-2',
+            environment: 'test'
+          })]);
+        })
+        .then(function() {
+          element = fixture('basic');
+          fire('selected-environment-changed', {
+            value: 'test'
+          });
+        });
+      });
+
+      test('Should reject promise without ID', function() {
+        return element.deleteEnvironment()
+        .then(function() {
+          throw new Error('TEST');
+        })
+        .catch(function(cause) {
+          if (cause.message === 'TEST') {
+            throw new Error('Validation passed invalid input');
+          }
+        });
+      });
+
+      test('Should return new _rev for deleted item', function() {
+        return element.deleteEnvironment(databaseRecordId)
+        .then(function(result) {
+          assert.ok(result.rev);
+        });
+      });
+
+      test('Should return new _id for deleted item', function() {
+        return element.deleteEnvironment(databaseRecordId)
+        .then(function(result) {
+          assert.equal(result.value, databaseRecordId);
+        });
+      });
+
+      test('Should update environments property', function() {
+        return element.deleteEnvironment(databaseRecordId)
+        .then(function() {
+          assert.lengthOf(element.environments, 0);
+        });
+      });
+
+      test('Should fire environments-list-changed custom event', function() {
+        var spy = sinon.spy();
+        element.addEventListener('environments-list-changed', spy);
+        return element.deleteEnvironment(databaseRecordId)
+        .then(function() {
+          assert.isTrue(spy.called);
+        });
+      });
+
+      test('Should fire environment-deleted custom event', function() {
+        var spy = sinon.spy();
+        element.addEventListener('environment-deleted', spy);
+        return element.deleteEnvironment(databaseRecordId)
+        .then(function() {
+          assert.isTrue(spy.called);
+        });
+      });
+
+      test('The environment-deleted event should not be cancellable', function(done) {
+        element.addEventListener('environment-deleted', function(e) {
+          assert.isFalse(e.cancelable);
+          done();
+        });
+        fire('environment-deleted', {
+          value: databaseRecordId
+        });
+      });
+
+      test('Should set environment to default', function(done) {
+        element.addEventListener('selected-environment-changed', function(e) {
+          assert.equal(e.detail.value, 'default');
+          done();
+        });
+        fire('environment-deleted', {
+          value: databaseRecordId
+        });
+      });
+
+      test('Variables should be empty', function(done) {
+        element.addEventListener('selected-environment-changed', function() {
+          assert.isUndefined(element.variables);
+          done();
+        });
+        fire('environment-deleted', {
+          value: databaseRecordId
+        });
+      });
+
+    });
+    </script>
+
+  </body>
+</html>

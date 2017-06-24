@@ -1,0 +1,157 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../iron-test-helpers/test-helpers.js"></script>
+    <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+    <!-- Step 1: import the element to test -->
+    <link rel="import" href="../variables-manager.html">
+    <link rel="import" href="../../arc-polyfills/arc-polyfills.html">
+  </head>
+  <body>
+
+    <test-fixture id="basic">
+      <template>
+        <variables-manager></variables-manager>
+      </template>
+    </test-fixture>
+
+    <script>
+    function fire(name, detail, node) {
+      var event = new CustomEvent(name, {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        detail: detail
+      });
+      (node || document).dispatchEvent(event);
+      return event;
+    }
+
+    function deleteDatabase(name) {
+      return new Promise(function(resolve, reject) {
+        var request = window.indexedDB.deleteDatabase('_pouch_' + name);
+        request.onerror = function() {
+          reject(new Error('Unable to delete ' + name + ' database'));
+        };
+        request.onsuccess = function() {
+          resolve();
+        };
+      });
+    }
+    /* global fixture, assert, sinon */
+    suite('selected-environment-changed', function() {
+      suiteSetup(function() {
+        return Promise.all([deleteDatabase('variables-environments'), deleteDatabase('variables')]);
+      });
+
+      var element;
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('Should set an environment', function() {
+        fire('selected-environment-changed', {
+          value: 'test'
+        });
+        assert.equal(element.environment, 'test');
+      });
+
+      test('Should not fire selected-environment-changed', function() {
+        var spy = sinon.spy();
+        element.addEventListener('selected-environment-changed', spy);
+        fire('selected-environment-changed', {
+          value: 'test'
+        });
+        assert.isFalse(spy.called);
+      });
+
+      test('Should fire variables-list-changed', function(done) {
+        var called = false;
+        element.addEventListener('variables-list-changed', function() {
+          if (called) {
+            return;
+          }
+          called = true;
+          done();
+        });
+        fire('selected-environment-changed', {
+          value: 'test'
+        });
+      });
+    });
+
+    suite('selected-environment-changed with values', function() {
+      suiteSetup(function() {
+        return Promise.all([deleteDatabase('variables-environments'), deleteDatabase('variables')])
+        .then(function() {
+          return new PouchDB('variables-environments').post({
+            name: 'test'
+          });
+        })
+        .then(function() {
+          var db2 = new PouchDB('variables');
+          return Promise.all([db2.post({
+            variable: 'test',
+            value: 'some variable',
+            environment: 'test'
+          }),
+          db2.post({
+            variable: 'test-2',
+            value: 'some variable-2',
+            environment: 'test-2'
+          })]);
+        });
+      });
+
+      var element;
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('The variables-list-changed returns one item', function(done) {
+        element.addEventListener('variables-list-changed', function(e) {
+          if (!e.detail.value.length) {
+            return;
+          }
+          assert.lengthOf(e.detail.value, 1);
+          done();
+        });
+        fire('selected-environment-changed', {
+          value: 'test'
+        });
+      });
+
+      test('The variables-list-changed event has stored value', function(done) {
+        element.addEventListener('variables-list-changed', function(e) {
+          if (!e.detail.value.length) {
+            return;
+          }
+          var value = e.detail.value[0];
+          assert.equal(value.variable, 'test');
+          assert.equal(value.value, 'some variable');
+          done();
+        });
+        fire('selected-environment-changed', {
+          value: 'test'
+        });
+      });
+    });
+    </script>
+
+  </body>
+</html>

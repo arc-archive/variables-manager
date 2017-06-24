@@ -1,0 +1,188 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../iron-test-helpers/test-helpers.js"></script>
+    <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+    <!-- Step 1: import the element to test -->
+    <link rel="import" href="../variables-manager.html">
+    <link rel="import" href="../../arc-polyfills/arc-polyfills.html">
+  </head>
+  <body>
+
+    <test-fixture id="basic">
+      <template>
+        <variables-manager></variables-manager>
+      </template>
+    </test-fixture>
+
+    <script>
+    function fire(name, detail, node) {
+      var event = new CustomEvent(name, {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        detail: detail
+      });
+      (node || document).dispatchEvent(event);
+      return event;
+    }
+
+    function deleteDatabase(name) {
+      return new Promise(function(resolve, reject) {
+        var request = window.indexedDB.deleteDatabase('_pouch_' + name);
+        request.onerror = function() {
+          reject(new Error('Unable to delete ' + name + ' database'));
+        };
+        request.onsuccess = function() {
+          resolve();
+        };
+      });
+    }
+    /* global fixture, assert, sinon */
+    suite('environment-updated', function() {
+      var databaseRecordId;
+      suiteSetup(function() {
+        return Promise.all([deleteDatabase('variables-environments'), deleteDatabase('variables')])
+        .then(function() {
+          return new PouchDB('variables-environments').post({
+            name: 'test'
+          });
+        })
+        .then(function(result) {
+          databaseRecordId = result.id;
+        });
+      });
+
+      var element;
+      setup(function() {
+        element = fixture('basic');
+        fire('selected-environment-changed', {
+          value: 'test'
+        });
+      });
+
+      test('The environment-updated event is cancelled', function(done) {
+        var event = fire('environment-updated', {
+          value: {
+            name: 'test2',
+            _id: databaseRecordId
+          }
+        });
+        // it must be wrapped in event listener or another test will fail
+        // because this would still running.
+        element.addEventListener('environment-updated', function() {
+          assert.isTrue(event.defaultPrevented);
+          done();
+        });
+
+      });
+
+      test('Fires environment-updated event', function(done) {
+        element.addEventListener('environment-updated', function() {
+          done();
+        });
+        fire('environment-updated', {
+          value: {
+            name: 'test',
+            _id: databaseRecordId
+          }
+        });
+      });
+
+      test('Fired environment-updated event is not cancellable', function(done) {
+        element.addEventListener('environment-updated', function(e) {
+          assert.isFalse(e.cancelable);
+          done();
+        });
+        fire('environment-updated', {
+          value: {
+            name: 'testx',
+            _id: databaseRecordId
+          }
+        });
+      });
+    });
+
+    suite('updateEnvironment()', function() {
+      suiteSetup(function() {
+        return Promise.all([deleteDatabase('variables-environments'), deleteDatabase('variables')]);
+      });
+
+      var element;
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('Should reject promise without name property', function() {
+        return element.updateEnvironment({})
+        .then(function() {
+          throw new Error('TEST');
+        })
+        .catch(function(cause) {
+          if (cause.message === 'TEST') {
+            throw new Error('Validation passed invalid input');
+          }
+        });
+      });
+
+      test('Should create new object in data store', function() {
+        return element.updateEnvironment({
+          name: 'test'
+        })
+        .then(function(result) {
+          assert.ok(result._id);
+          assert.ok(result._rev);
+        });
+      });
+
+      test('Should fire environment-updated custom event', function() {
+        var spy = sinon.spy();
+        element.addEventListener('environment-updated', spy);
+        return element.updateEnvironment({
+          name: 'test'
+        })
+        .then(function() {
+          assert.isTrue(spy.called);
+        });
+      });
+
+      var lastItem;
+
+      test('Should update environments array', function() {
+        return element.updateEnvironment({
+          name: 'test'
+        })
+        .then(function(result) {
+          lastItem = result;
+          assert.lengthOf(element.environments, 3); // this + two previous tests
+        });
+      });
+
+      test('Should update existing item', function() {
+        var update = Object.assign({}, lastItem);
+        update.name = 'xxx';
+        return element.updateEnvironment(update)
+        .then(function(result) {
+          assert.notEqual(lastItem._rev, result._rev);
+        });
+      });
+    });
+    </script>
+
+  </body>
+</html>
