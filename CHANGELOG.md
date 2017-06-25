@@ -1,3 +1,19 @@
+<a name="0.1.5"></a>
+## [0.1.5](https://github.com/advanced-rest-client/variables-manager/compare/0.1.4...v0.1.5) (2017-06-25)
+
+
+### New
+
+* Added option to change environment name. ([f8c1b8bbae7b84eb767e9d4510248be3204ab8f2](https://github.com/advanced-rest-client/variables-manager/commit/f8c1b8bbae7b84eb767e9d4510248be3204ab8f2))
+
+### Update
+
+* Fixed an issue when environemnts or variables values were changed in the source array in the manager so changes in other elements couldn't be observed. ([b8a9c113a9635730391e854a01b52dd164326230](https://github.com/advanced-rest-client/variables-manager/commit/b8a9c113a9635730391e854a01b52dd164326230))
+* Prevented sending an event about full lists change when the item is updated or deleted. Other events covers this change notification. ([c0b7282cd10af1536a199a1fc34e9119556fccbf](https://github.com/advanced-rest-client/variables-manager/commit/c0b7282cd10af1536a199a1fc34e9119556fccbf))
+* Updated tests to match new API ([ce0c655d468123828997655302f6c61391a711df](https://github.com/advanced-rest-client/variables-manager/commit/ce0c655d468123828997655302f6c61391a711df))
+
+
+
 <a name="0.1.4"></a>
 ## [0.1.4](https://github.com/advanced-rest-client/variables-manager/compare/0.1.3...v0.1.4) (2017-06-24)
 
