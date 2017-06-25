@@ -373,7 +373,19 @@ Polymer({
    * Fires a `environments-list-changed` custom event.
    */
   _environmentsChanged: function(record) {
+    if (this._cancelEnvironmentsChangeEvent) {
+      return;
+    }
     var value = record && record.base;
+    if (value) {
+      // Need a copy of the less otherwise notification system
+      // in elements that uses this list won't work.
+      // Because complex object are passed by refenrence any change to the
+      // object elsewhere would result with change here and this is bad.
+      value = value.map(function(item) {
+        return Object.assign({}, item);
+      });
+    }
     this.fire('environments-list-changed', {
       value: value
     });
@@ -383,7 +395,15 @@ Polymer({
    * Fires a `variables-list-changed` custom event.
    */
   _variablesChanged: function(record) {
+    if (this._cancelVariablesChangeEvent) {
+      return;
+    }
     var value = record && record.base;
+    if (value) {
+      value = value.map(function(item) {
+        return Object.assign({}, item);
+      });
+    }
     this.fire('variables-list-changed', {
       value: value,
       environment: this.environment
@@ -623,12 +643,17 @@ Polymer({
       data.created = data.created.getTime();
     }
     var promise;
+    var oldName;
     if (!data._id) {
       // creates new environment
       promise = Promise.resolve(data);
     } else {
       promise = this._envDb.get(data._id)
       .then(function(doc) {
+        if (data.name !== doc.name) {
+          oldName = doc.name;
+          doc.name = data.name;
+        }
         data._rev = doc._rev;
         return data;
       })
@@ -654,6 +679,9 @@ Polymer({
         value: data
       });
       this.__updateEnvironmentItem(data);
+      if (oldName) {
+        this.__updateEnvironmentName(oldName, data);
+      }
       return data;
     }.bind(this))
     .catch(function(cause) {
@@ -670,8 +698,10 @@ Polymer({
    */
   __updateEnvironmentItem: function(data) {
     var envs = this.environments;
+    this._cancelEnvironmentsChangeEvent = true;
     if (!envs) {
       this.set('environments', [data]);
+      this._cancelEnvironmentsChangeEvent = false;
       return;
     }
     var index = envs.findIndex(function(item) {
@@ -682,6 +712,45 @@ Polymer({
     } else {
       this.push('environments', data);
     }
+    this._cancelEnvironmentsChangeEvent = false;
+  },
+  /**
+   * A special case when the name of the environment changes.
+   * It updates any related to this environment variables.
+   *
+   * If this is current environment it also changes its name.
+   *
+   * @param {String} oldName Name of the environment befoe the change
+   * @param {String} data Updated data store entry
+   */
+  __updateEnvironmentName: function(oldName, data) {
+    var isCurrent = oldName === this.environment;
+    var promise;
+
+    if (isCurrent) {
+      promise = Promise.resolve(this.variables);
+    } else {
+      promise = this.listVariables(oldName);
+    }
+    promise.then(function(variables) {
+      if (!variables || !variables.length) {
+        return;
+      }
+      variables = variables.map(function(item) {
+        item.environment = data.name;
+        return item;
+      });
+      return this._varDb.bulkDocs(variables);
+    }.bind(this))
+    .then(function(result) {
+      if (!result || !result.length) {
+        return;
+      }
+      if (isCurrent) {
+        this.set('environment', data.name);
+        // setter will update list of variables
+      }
+    }.bind(this));
   },
 
   /**
@@ -728,7 +797,9 @@ Polymer({
           return item._id === id;
         });
         if (~index) {
+          this._cancelEnvironmentsChangeEvent = true;
           this.splice('environments', index, 1);
+          this._cancelEnvironmentsChangeEvent = false;
         }
       }
       var detail = {
@@ -941,9 +1012,11 @@ Polymer({
     if (data.environment !== this.environment) {
       return;
     }
+    this._cancelVariablesChangeEvent = true;
     var vars = this.variables;
     if (!vars) {
       this.set('variables', [data]);
+      this._cancelVariablesChangeEvent = false;
       return;
     }
     var index = vars.findIndex(function(item) {
@@ -954,6 +1027,7 @@ Polymer({
     } else {
       this.push('variables', data);
     }
+    this._cancelVariablesChangeEvent = false;
   },
   /**
    * Deletes a variable from the data store.
@@ -996,7 +1070,9 @@ Polymer({
           return item._id === id;
         });
         if (~index) {
+          this._cancelVariablesChangeEvent = true;
           this.splice('variables', index, 1);
+          this._cancelVariablesChangeEvent = false;
         }
       }
       var detail = {
