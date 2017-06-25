@@ -377,6 +377,15 @@ Polymer({
       return;
     }
     var value = record && record.base;
+    if (value) {
+      // Need a copy of the less otherwise notification system
+      // in elements that uses this list won't work.
+      // Because complex object are passed by refenrence any change to the
+      // object elsewhere would result with change here and this is bad.
+      value = value.map(function(item) {
+        return Object.assign({}, item);
+      });
+    }
     this.fire('environments-list-changed', {
       value: value
     });
@@ -390,6 +399,11 @@ Polymer({
       return;
     }
     var value = record && record.base;
+    if (value) {
+      value = value.map(function(item) {
+        return Object.assign({}, item);
+      });
+    }
     this.fire('variables-list-changed', {
       value: value,
       environment: this.environment
