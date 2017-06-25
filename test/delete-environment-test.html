@@ -109,12 +109,12 @@ the License.
         });
       });
 
-      test('Should fire environments-list-changed custom event', function() {
+      test('Should not fire environments-list-changed custom event', function() {
         var spy = sinon.spy();
         element.addEventListener('environments-list-changed', spy);
         return element.deleteEnvironment(databaseRecordId)
         .then(function() {
-          assert.isTrue(spy.called);
+          assert.isFalse(spy.called);
         });
       });
 
