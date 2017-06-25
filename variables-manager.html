@@ -643,12 +643,17 @@ Polymer({
       data.created = data.created.getTime();
     }
     var promise;
+    var oldName;
     if (!data._id) {
       // creates new environment
       promise = Promise.resolve(data);
     } else {
       promise = this._envDb.get(data._id)
       .then(function(doc) {
+        if (data.name !== doc.name) {
+          oldName = doc.name;
+          doc.name = data.name;
+        }
         data._rev = doc._rev;
         return data;
       })
@@ -674,6 +679,9 @@ Polymer({
         value: data
       });
       this.__updateEnvironmentItem(data);
+      if (oldName) {
+        this.__updateEnvironmentName(oldName, data);
+      }
       return data;
     }.bind(this))
     .catch(function(cause) {
@@ -705,6 +713,44 @@ Polymer({
       this.push('environments', data);
     }
     this._cancelEnvironmentsChangeEvent = false;
+  },
+  /**
+   * A special case when the name of the environment changes.
+   * It updates any related to this environment variables.
+   *
+   * If this is current environment it also changes its name.
+   *
+   * @param {String} oldName Name of the environment befoe the change
+   * @param {String} data Updated data store entry
+   */
+  __updateEnvironmentName: function(oldName, data) {
+    var isCurrent = oldName === this.environment;
+    var promise;
+
+    if (isCurrent) {
+      promise = Promise.resolve(this.variables);
+    } else {
+      promise = this.listVariables(oldName);
+    }
+    promise.then(function(variables) {
+      if (!variables || !variables.length) {
+        return;
+      }
+      variables = variables.map(function(item) {
+        item.environment = data.name;
+        return item;
+      });
+      return this._varDb.bulkDocs(variables);
+    }.bind(this))
+    .then(function(result) {
+      if (!result || !result.length) {
+        return;
+      }
+      if (isCurrent) {
+        this.set('environment', data.name);
+        // setter will update list of variables
+      }
+    }.bind(this));
   },
 
   /**
