@@ -18,6 +18,7 @@
   "globals": {
     "Polymer": true,
     "PouchDB": true,
-    "Promise": true
+    "Promise": true,
+    "ArcBehaviors": true
   }
 }
