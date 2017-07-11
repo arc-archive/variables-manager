@@ -1,3 +1,13 @@
+<a name="0.1.7"></a>
+## [0.1.7](https://github.com/advanced-rest-client/variables-manager/compare/0.1.6...v0.1.7) (2017-07-11)
+
+
+### Update
+
+* Added `EventsTargetBehavior` to change an event listeners target for the element. ([5cfeded6a9e910b739f562039a2731062fba219e](https://github.com/advanced-rest-client/variables-manager/commit/5cfeded6a9e910b739f562039a2731062fba219e))
+
+
+
 <a name="0.1.6"></a>
 ## [0.1.6](https://github.com/advanced-rest-client/variables-manager/compare/0.1.5...v0.1.6) (2017-06-25)
 
