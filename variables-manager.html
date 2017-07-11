@@ -14,6 +14,7 @@ the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../arc-polyfills/arc-polyfills.html">
 <link rel="import" href="../app-pouchdb/pouchdb.html">
+<link rel="import" href="../events-target-behavior/events-target-behavior.html">
 <!--
 A manager for environments and variables. Non UI element that manages variables
 state and handle data storage.
@@ -203,6 +204,8 @@ The element doesn't provide any UI.
 Polymer({
   is: 'variables-manager',
 
+  behaviors: [ArcBehaviors.EventsTargetBehavior],
+
   /**
    * Fired when selected environment has changed.
    * This event is not fired if the change has been causes by the
@@ -323,31 +326,36 @@ Polymer({
 
   attached: function() {
     this._updateEnvironmentsList();
-    this._eventTarget = Polymer.dom(this).host || window;
-    this.listen(this._eventTarget, 'selected-environment-changed', '_envChnageHandler');
-    this.listen(this._eventTarget, 'environment-updated', '_envUpdateHandler');
-    this.listen(this._eventTarget, 'environment-deleted', '_envDeleteHandler');
-    this.listen(this._eventTarget, 'environment-current', '_envGetCurrentHandler');
-    this.listen(this._eventTarget, 'environment-list', '_envListHandler');
+  },
+  
+  _attachListeners: function(node) {
+    this.listen(node, 'selected-environment-changed', '_envChnageHandler');
+    this.listen(node, 'environment-updated', '_envUpdateHandler');
+    this.listen(node, 'environment-deleted', '_envDeleteHandler');
+    this.listen(node, 'environment-current', '_envGetCurrentHandler');
+    this.listen(node, 'environment-list', '_envListHandler');
 
-    this.listen(this._eventTarget, 'variable-updated', '_varUpdateHandler');
-    this.listen(this._eventTarget, 'variable-deleted', '_varDeleteHandler');
-    this.listen(this._eventTarget, 'variable-list', '_varListHandler');
+    this.listen(node, 'variable-updated', '_varUpdateHandler');
+    this.listen(node, 'variable-deleted', '_varDeleteHandler');
+    this.listen(node, 'variable-list', '_varListHandler');
+
+    if (this.environment) {
+      this.fire('selected-environment-changed', {
+        value: this.environment
+      });
+    }
   },
 
-  detached: function() {
-    if (!this._eventTarget) {
-      return;
-    }
-    this.unlisten(this._eventTarget, 'selected-environment-changed', '_envChnageHandler');
-    this.unlisten(this._eventTarget, 'environment-updated', '_envUpdateHandler');
-    this.unlisten(this._eventTarget, 'environment-deleted', '_envDeleteHandler');
-    this.unlisten(this._eventTarget, 'environment-current', '_envGetCurrentHandler');
-    this.unlisten(this._eventTarget, 'environment-list', '_envListHandler');
+  _detachListeners: function(node) {
+    this.unlisten(node, 'selected-environment-changed', '_envChnageHandler');
+    this.unlisten(node, 'environment-updated', '_envUpdateHandler');
+    this.unlisten(node, 'environment-deleted', '_envDeleteHandler');
+    this.unlisten(node, 'environment-current', '_envGetCurrentHandler');
+    this.unlisten(node, 'environment-list', '_envListHandler');
 
-    this.unlisten(this._eventTarget, 'variable-updated', '_varUpdateHandler');
-    this.unlisten(this._eventTarget, 'variable-deleted', '_varDeleteHandler');
-    this.unlisten(this._eventTarget, 'variable-list', '_varListHandler');
+    this.unlisten(node, 'variable-updated', '_varUpdateHandler');
+    this.unlisten(node, 'variable-deleted', '_varDeleteHandler');
+    this.unlisten(node, 'variable-list', '_varListHandler');
   },
 
   /**
