@@ -327,7 +327,7 @@ Polymer({
   attached: function() {
     this._updateEnvironmentsList();
   },
-  
+
   _attachListeners: function(node) {
     this.listen(node, 'selected-environment-changed', '_envChnageHandler');
     this.listen(node, 'environment-updated', '_envUpdateHandler');
@@ -338,6 +338,8 @@ Polymer({
     this.listen(node, 'variable-updated', '_varUpdateHandler');
     this.listen(node, 'variable-deleted', '_varDeleteHandler');
     this.listen(node, 'variable-list', '_varListHandler');
+
+    this.listen(node, 'data-imported', '_dataImportHandler');
 
     if (this.environment) {
       this.fire('selected-environment-changed', {
@@ -356,6 +358,8 @@ Polymer({
     this.unlisten(node, 'variable-updated', '_varUpdateHandler');
     this.unlisten(node, 'variable-deleted', '_varDeleteHandler');
     this.unlisten(node, 'variable-list', '_varListHandler');
+
+    this.unlisten(node, 'data-imported', '_dataImportHandler');
   },
 
   /**
@@ -423,7 +427,7 @@ Polymer({
    * This task is asynchronus.
    */
   _updateEnvironmentsList: function() {
-    this.listEnvironments()
+    return this.listEnvironments()
     .then(function(environments) {
       this.set('environments', environments);
     }.bind(this))
@@ -533,6 +537,16 @@ Polymer({
     this.__cancelEnvChangeEvent = true;
     this.set('environment', e.detail.value);
     this.__cancelEnvChangeEvent = false;
+  },
+  /**
+   * Handler for the `data-imported` custom event. Refreshes list of environmants
+   * and variables.
+   */
+  _dataImportHandler: function() {
+    this._updateEnvironmentsList()
+    .then(function() {
+      return this._updateVariablesList();
+    }.bind(this));
   },
 
   _eventCancelled: function(e) {
