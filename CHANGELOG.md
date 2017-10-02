@@ -1,3 +1,13 @@
+<a name="0.1.9"></a>
+## [0.1.9](https://github.com/advanced-rest-client/variables-manager/compare/0.1.7...0.1.9) (2017-10-02)
+
+
+### New
+
+* Added support for data-imported custom event. ([c3c8c3ab2fd94a84b124dd8be0f6bbf667470242](https://github.com/advanced-rest-client/variables-manager/commit/c3c8c3ab2fd94a84b124dd8be0f6bbf667470242))
+
+
+
 <a name="0.1.8"></a>
 ## [0.1.8](https://github.com/advanced-rest-client/variables-manager/compare/0.1.7...v0.1.8) (2017-07-11)
 
