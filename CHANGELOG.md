@@ -1,3 +1,13 @@
+<a name="0.1.12"></a>
+## [0.1.12](https://github.com/advanced-rest-client/variables-manager/compare/0.1.11...0.1.12) (2018-02-05)
+
+
+### Update
+
+* Adding prop[erty to the variable model to recognize system variable. ([8bc9b4586656fc9a5699e55e34c46909bfe30556](https://github.com/advanced-rest-client/variables-manager/commit/8bc9b4586656fc9a5699e55e34c46909bfe30556))
+
+
+
 <a name="0.1.11"></a>
 ## [0.1.11](https://github.com/advanced-rest-client/variables-manager/compare/0.1.10...0.1.11) (2018-02-05)
 
