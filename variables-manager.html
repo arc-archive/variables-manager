@@ -308,8 +308,32 @@ Polymer({
     /**
      * List of variables associated with current `environment`.
      */
-    variables: Array,
+    variables: Array
   },
+  /**
+   * Returns a list of system variables.
+   * This returns a value only if the element is executed in node environment.
+   * @return {Array} Variables model for system variables or empty array
+   * if not in node environment.
+   */
+  get systemVariables() {
+    var value = [];
+    if (typeof process === 'undefined' || typeof process.env === 'undefined') {
+      return value;
+    }
+    var name = this.environemnt;
+    Object.keys(process.env).forEach(function(env) {
+      var obj = {
+        variable: env,
+        value: process.env[env],
+        enabled: true,
+        environment: name
+      };
+      value.push(obj);
+    });
+    return value;
+  },
+
   // PouchDB's handler to the environments database.
   get _envDb() {
     return new PouchDB('variables-environments');
@@ -455,6 +479,9 @@ Polymer({
         console.info(msg, currentEnv, this.environemnt);
         return;
       }
+      variables = variables || [];
+      var sysVars = this.systemVariables;
+      variables = variables.concat(sysVars);
       this.set('variables', variables);
     }.bind(this))
     .catch(function(cause) {
