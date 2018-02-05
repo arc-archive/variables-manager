@@ -327,7 +327,8 @@ Polymer({
         variable: env,
         value: process.env[env],
         enabled: true,
-        environment: name
+        environment: name,
+        sysVar: true
       };
       value.push(obj);
     });
