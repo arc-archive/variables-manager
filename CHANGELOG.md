@@ -1,3 +1,13 @@
+<a name="0.1.10"></a>
+## [0.1.10](https://github.com/advanced-rest-client/variables-manager/compare/0.1.9...0.1.10) (2018-02-05)
+
+
+### Update
+
+* Adding system variables if executed in node env. ([d14ca61beb156809b5c188edd18e7ddaafe9124a](https://github.com/advanced-rest-client/variables-manager/commit/d14ca61beb156809b5c188edd18e7ddaafe9124a))
+
+
+
 <a name="0.1.9"></a>
 ## [0.1.9](https://github.com/advanced-rest-client/variables-manager/compare/0.1.7...0.1.9) (2017-10-02)
 
