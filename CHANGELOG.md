@@ -1,3 +1,13 @@
+<a name="0.1.16"></a>
+## [0.1.16](https://github.com/advanced-rest-client/variables-manager/compare/0.1.15...0.1.16) (2018-02-09)
+
+
+### Fix
+
+* Requesting for variables list now will result with all vars. ([0d64ed408c87ec1460b631b7142a38c59c9b73c2](https://github.com/advanced-rest-client/variables-manager/commit/0d64ed408c87ec1460b631b7142a38c59c9b73c2))
+
+
+
 <a name="0.1.15"></a>
 ## [0.1.15](https://github.com/advanced-rest-client/variables-manager/compare/0.1.14...0.1.15) (2018-02-09)
 
