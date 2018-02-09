@@ -308,7 +308,12 @@ Polymer({
     /**
      * List of variables associated with current `environment`.
      */
-    variables: Array
+    variables: Array,
+    /**
+     * List of variables that overrides all existing variables
+     * (system or app) and exists only in memory.
+     */
+    inMemVariables: Array
   },
   /**
    * Returns a list of system variables.
@@ -346,7 +351,8 @@ Polymer({
 
   observers: [
     '_environmentsChanged(environments.*)',
-    '_variablesChanged(variables.*)'
+    '_variablesChanged(variables.*)',
+    '_inMemVariablesChanged(inMemVariables.*)'
   ],
 
   attached: function() {
@@ -366,6 +372,10 @@ Polymer({
 
     this.listen(node, 'data-imported', '_dataImportHandler');
 
+    // request actions
+    this.listen(node, 'variable-store-action', '_varStoreActionHandler');
+    this.listen(node, 'variable-update-action', '_varUpdateActionHandler');
+
     if (this.environment) {
       this.fire('selected-environment-changed', {
         value: this.environment
@@ -379,12 +389,12 @@ Polymer({
     this.unlisten(node, 'environment-deleted', '_envDeleteHandler');
     this.unlisten(node, 'environment-current', '_envGetCurrentHandler');
     this.unlisten(node, 'environment-list', '_envListHandler');
-
     this.unlisten(node, 'variable-updated', '_varUpdateHandler');
     this.unlisten(node, 'variable-deleted', '_varDeleteHandler');
     this.unlisten(node, 'variable-list', '_varListHandler');
-
     this.unlisten(node, 'data-imported', '_dataImportHandler');
+    this.unlisten(node, 'variable-store-action', '_varStoreActionHandler');
+    this.unlisten(node, 'variable-update-action', '_varUpdateActionHandler');
   },
 
   /**
@@ -431,21 +441,66 @@ Polymer({
    * Handler for the `variables` property change.
    * Fires a `variables-list-changed` custom event.
    */
-  _variablesChanged: function(record) {
+  _variablesChanged: function() {
     if (this._cancelVariablesChangeEvent) {
       return;
     }
-    var value = record && record.base;
-    if (value) {
-      value = value.map(function(item) {
-        return Object.assign({}, item);
+    this._notifyVarsListChanged();
+  },
+
+  _inMemVariablesChanged: function(record) {
+    if (this._cancelVariablesChangeEvent) {
+      return;
+    }
+    if (!record || record.path === 'inMemVariables.splices') {
+      return;
+    }
+    this._notifyVarsListChanged();
+  },
+  /**
+   * Lists app, sys and in mem variables in single array.
+   * @return {Array<Object>} List of all variables.
+   */
+  listAllVariables: function() {
+    var variables = this.variables;
+    var memVariables = this.inMemVariables;
+    var result = [];
+    var names = [];
+    if (variables && variables.length) {
+      variables.forEach(function(item) {
+        names.push(item.variable);
+        result.push(Object.assign({}, item));
       });
     }
+    if (memVariables) {
+      for (var i = 0, len = memVariables.length; i < len; i++) {
+        var item = Object.assign({}, memVariables[i]);
+        if (names.indexOf(item.variable) !== -1) {
+          for (var j = 0, resLen = result.length; j < resLen; j++) {
+            if (result[j].variable === item.variable) {
+              result[j] = item;
+              break;
+            }
+          }
+        } else {
+          result.push(item);
+        }
+      }
+    }
+    return result;
+  },
+
+  /**
+   * Combines both app variables and in memory variables
+   * and informs listeners about the change.
+   */
+  _notifyVarsListChanged: function() {
     this.fire('variables-list-changed', {
-      value: value,
+      value: this.listAllVariables(),
       environment: this.environment
     });
   },
+
   /**
    * Get's a list of environments and updates the `environments` property.
    *
@@ -726,7 +781,7 @@ Polymer({
       data._id = result.id;
       data._rev = result.rev;
       this.fire('environment-updated', {
-        value: data
+        value: Object.assign({}, data)
       });
       this.__updateEnvironmentItem(data);
       if (oldName) {
@@ -1045,7 +1100,7 @@ Polymer({
       data._id = result.id;
       data._rev = result.rev;
       this.fire('variable-updated', {
-        value: data
+        value: Object.assign({}, data)
       });
       this.__updateVariableItem(data);
       return data;
@@ -1136,6 +1191,54 @@ Polymer({
       this._handleException(error);
       throw new Error(error.message);
     }.bind(this));
+  },
+
+  _varStoreActionHandler: function(e) {
+    var obj = {
+      variable: e.detail.variable,
+      value: e.detail.value,
+      enabled: true,
+      sysVar: false,
+      environment: this.environemnt
+    };
+    if (!this.variables) {
+      e.detail.result = this.updateVariable(obj);
+      return e.detail.result;
+    }
+    var index = this.variables.findIndex(function(item) {
+      return item.variable === obj.variable;
+    });
+    if (index === -1) {
+      e.detail.result = this.updateVariable(obj);
+      return e.detail.result;
+    } else {
+      this.variables[index].value = obj.value;
+      e.detail.result = this.updateVariable(this.variables[index]);
+      return e.detail.result;
+    }
+  },
+
+  _varUpdateActionHandler: function(e) {
+    // in memory variable change - without storing it to the store.
+    var obj = {
+      variable: e.detail.variable,
+      value: e.detail.value,
+      enabled: true,
+      sysVar: false,
+      environment: '*'
+    };
+    if (!this.inMemVariables) {
+      this.set('inMemVariables', [obj]);
+      return;
+    }
+    var index = this.inMemVariables.findIndex(function(item) {
+      return item.variable === obj.variable;
+    });
+    if (index === -1) {
+      this.push('inMemVariables', obj);
+    } else {
+      this.set(['inMemVariables', index, 'value'], obj.value);
+    }
   }
 });
 </script>
