@@ -726,7 +726,7 @@ Polymer({
       data._id = result.id;
       data._rev = result.rev;
       this.fire('environment-updated', {
-        value: data
+        value: Object.assign({}, data)
       });
       this.__updateEnvironmentItem(data);
       if (oldName) {
@@ -1045,7 +1045,7 @@ Polymer({
       data._id = result.id;
       data._rev = result.rev;
       this.fire('variable-updated', {
-        value: data
+        value: Object.assign({}, data)
       });
       this.__updateVariableItem(data);
       return data;
