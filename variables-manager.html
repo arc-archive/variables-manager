@@ -1038,7 +1038,7 @@ Polymer({
       return;
     }
     this._cancelEvent(e);
-    e.detail.value = this.variables;
+    e.detail.value = this.listAllVariables();
     e.detail.environment = this.environment;
   },
 
