@@ -1,5 +1,5 @@
 language: node_js
-node_js: stable
+node_js: 8
 sudo: required
 before_script:
   - npm install -g polymer-cli
@@ -21,7 +21,7 @@ script:
     --build-number=${TRAVIS_BUILD_NUMBER}; fi
 cache:
   directories:
-    - node_modules
+    - "$HOME/.npm"
 after_success:
   - node tasks/ci.js
 env:
