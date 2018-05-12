@@ -1,29 +1,12 @@
 <!doctype html>
-<!--
-@license
-Copyright 2016 The Advanced REST client authors <arc@mulesoft.com>
-Licensed under the Apache License, Version 2.0 (the "License"); you may not
-use this file except in compliance with the License. You may obtain a copy of
-the License at
-http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations under
-the License.
--->
 <html>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-
     <script src="helper.js"></script>
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
-    <script src="../../iron-test-helpers/test-helpers.js"></script>
-    <script src="../../iron-test-helpers/mock-interactions.js"></script>
     <link rel="import" href="../variables-manager.html">
-    <link rel="import" href="../../arc-polyfills/arc-polyfills.html">
   </head>
   <body>
 
@@ -34,13 +17,13 @@ the License.
     </test-fixture>
 
     <script>
-    /* global fixture, assert, sinon, VariablesTestHelper */
-    suite(VariablesTestHelper.suiteName('Changing environment'), function() {
-      suiteSetup(function() {
+    /* global VariablesTestHelper */
+    suite('Changing environment', function() {
+      suiteSetup(() => {
         return VariablesTestHelper.deleteAllDatabases();
       });
 
-      var element;
+      let element;
       setup(function() {
         element = fixture('basic');
       });
@@ -53,7 +36,7 @@ the License.
       });
 
       test('Should not fire selected-environment-changed', function() {
-        var spy = sinon.spy();
+        const spy = sinon.spy();
         element.addEventListener('selected-environment-changed', spy);
         VariablesTestHelper.fire('selected-environment-changed', {
           value: 'test'
@@ -62,7 +45,7 @@ the License.
       });
 
       test('Should fire variables-list-changed', function(done) {
-        var called = false;
+        let called = false;
         element.addEventListener('variables-list-changed', function() {
           if (called) {
             return;
