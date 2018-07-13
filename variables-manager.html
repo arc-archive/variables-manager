@@ -203,6 +203,9 @@ the License.
  *
  * - PouchDB is optional dependency. Add your own version of PouchDB to use the
  * component.
+ * - `environment-updated`, `environment-deleted`, `variable-updated`, and
+ * `variable-deleted` events always set `result` on the detail object with the
+ * promise. It does not set `error` property anymore.
  *
  * @memberof LogicElements
  * @customElement
@@ -272,7 +275,6 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     });
     return value;
   }
-
   /**
    * Handler to the environments database.
    *
@@ -600,7 +602,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
       return;
     }
     this._cancelEvent(e);
-    this.updateEnvironment(e.detail.value, e);
+    e.detail.result = this.updateEnvironment(e.detail.value);
   }
   /**
    * A handler for the `environment-deleted` custom event.
@@ -617,7 +619,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
       return;
     }
     this._cancelEvent(e);
-    this.deleteEnvironment(e.detail.value, e);
+    e.detail.result = this.deleteEnvironment(e.detail.value);
   }
   /**
    * A handler for the `environment-current` custom event.
@@ -668,17 +670,11 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * @param {Object} data A PouchDB object to be stored. It should contain the
    * `_id` property if the object is about to be updated. If the `_id` doesn't
    * exists a new object is created.
-   * @param {?Event} e Optional. If it is called from the event handler, this
-   * is the event object. If initial validation fails then it will set `error`
-   * property on the `detail` object.
    * @return {Promise}
    */
-  updateEnvironment(data, e) {
+  updateEnvironment(data) {
     if (!data.name) {
       const error = new Error('Can\'t create an environment without the name.');
-      if (e && e.detail) {
-        e.detail.error = error;
-      }
       return Promise.reject(error);
     }
     if (!data.created) {
@@ -809,17 +805,11 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * event.
    *
    * @param {Object} id The PouchDB `_id` property of the object to delete.
-   * @param {?Event} e Optional. If it is called from the event handler, this
-   * is the event object. If initial validation fails then it will set `error`
-   * property on the `detail` object.
    * @return {Promise}
    */
-  deleteEnvironment(id, e) {
+  deleteEnvironment(id) {
     if (!id) {
       const error = new Error('Can\'t delete an environment without its id');
-      if (e && e.detail) {
-        e.detail.error = error;
-      }
       return Promise.reject(error);
     }
     let environment;
@@ -918,7 +908,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
       return;
     }
     this._cancelEvent(e);
-    this.updateVariable(e.detail.value, e);
+    e.detail.result = this.updateVariable(e.detail.value);
   }
   /**
    * Deletes a variable from the data store.
@@ -945,7 +935,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
       return;
     }
     this._cancelEvent(e);
-    this.deleteVariable(e.detail.value, e);
+    e.detail.result = this.deleteVariable(e.detail.value);
   }
   /**
    * A handler for the `variable-list` custom event.
@@ -993,18 +983,12 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * @param {Object} data A PouchDB object to be stored. It should contain the
    * `_id` property if the object is about to be updated. If the `_id` doesn't
    * exists a new object is created.
-   * @param {?Event} e Optional. If it is called from the event handler, this
-   * is the event object. If initial validation fails then it will set `error`
-   * property on the `detail` object.
    * @return {Promise}
    */
-  updateVariable(data, e) {
+  updateVariable(data) {
     if (!data.variable) {
       const m = 'Can\'t create a variable without the variable property';
       const error = new Error(m);
-      if (e && e.detail) {
-        e.detail.error = error;
-      }
       return Promise.reject(error);
     }
     const db = this._varDb;
@@ -1085,17 +1069,11 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * event.
    *
    * @param {Object} id The PouchDB `_id` property of the object to delete.
-   * @param {?Event} e Optional. If it is called from the event handler, this
-   * is the event object. If initial validation fails then it will set `error`
-   * property on the `detail` object.
    * @return {Promise}
    */
-  deleteVariable(id, e) {
+  deleteVariable(id) {
     if (!id) {
       const error = new Error('Can\'t delete a variable without its id');
-      if (e && e.detail) {
-        e.detail.error = error;
-      }
       return Promise.reject(error);
     }
     const db = this._varDb;
@@ -1143,7 +1121,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
       e.detail.result = this.updateVariable(obj);
       return e.detail.result;
     }
-    var index = this.variables.findIndex((item) => item.variable === obj.variable);
+    const index = this.variables.findIndex((item) => item.variable === obj.variable);
     if (index === -1) {
       e.detail.result = this.updateVariable(obj);
       return e.detail.result;
