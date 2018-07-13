@@ -12,7 +12,6 @@ License for the specific language governing permissions and limitations under
 the License.
 -->
 <link rel="import" href="../polymer/polymer-element.html">
-<link rel="import" href="../app-pouchdb/pouchdb.html">
 <link rel="import" href="../events-target-behavior/events-target-behavior.html">
 <script>
 /**
@@ -26,7 +25,8 @@ the License.
  * ```
  *
  * This element is designed to work with browser's event system. That means that
- * each operation can be done by dispatching [CustomEvent](https://developer.mozilla.org/en/docs/Web/API/CustomEvent).
+ * each operation can be done by dispatching
+ * [CustomEvent](https://developer.mozilla.org/en/docs/Web/API/CustomEvent).
  *
  * **Important** Events that request data update (create/update/delete) must be
  * cancellable. Otherwise the element will not handle the event at all.
@@ -198,6 +198,11 @@ the License.
  *    console.log(e.detail.environment); // Environment name.
  * }
  * ```
+ *
+ * ## New in version 2
+ *
+ * - PouchDB is optional dependency. Add your own version of PouchDB to use the
+ * component.
  *
  * @memberof LogicElements
  * @customElement

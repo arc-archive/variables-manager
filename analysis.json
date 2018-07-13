@@ -1,3 +1,1263 @@
 {
-  "schema_version": "1.0.0"
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "description": "A manager for environments and variables. Non UI element that manages variables\nstate and handle data storage.\n\n### Example\n\n```html\n<variables-manager></variables-manager>\n```\n\nThis element is designed to work with browser's event system. That means that\neach operation can be done by dispatching\n[CustomEvent](https://developer.mozilla.org/en/docs/Web/API/CustomEvent).\n\n**Important** Events that request data update (create/update/delete) must be\ncancellable. Otherwise the element will not handle the event at all.\n\nWhen the update event is handled it is cancelled so 1) other managers that\nexists in the DOM and listens fo the same event will not execute change 2)\nafter execution the manager dispatches the same event which is not cancellable.\nUI element and other relevant parts of the application should handle only the\nevent that is not cancellable because it contains data **after** the update\nhas been stored in the datastore.\n\n### Example\n\n```javascript\n// requesting to create an environment\nconst e = new CustomEvent('environment-updated', {\n   bubbles: true,\n   composed: true,\n   cancelable: true,\n   detail: {\n     name: 'Test environment'\n   }\n});\ndocument.dispatchEvent(e);\nconsole.log(e.defaultPrevented); // true\n```\n\nThe event requesting data change is cancelled and propagation of the\nevent is stopped. The same script should listen for the same event to\ncheck for data update:\n\n```javascript\n\nwindow.addEventListener('environment-updated', function(e) {\n   if (e.cancelable) {\n     // This event requesting data change. We shouldn't be interested in this\n     // event.\n     return;\n   }\n   const environment = e.detail.value;\n   console.log(environment._id, environment._rev);\n});\n```\n\nUpdated object will have updated `_rev` property and `_id`. This are\n[PouchDb](https://pouchdb.com/api.html) properties to identify data in the\ndatastore.\n\n## Events API\n\n### selected-environment-changed\n\nChanges currently selected environment in the manager. This event doesn't have\nto be cancelable. The change trigges request to read variables for new\nenvironment so `variables-list-changed` event is expected to be fired.\n\n#### Properties\n\n`value` (`string`) - Selected environment name\n\n### environment-updated\n\nUpdates or creates new environment. This event have to be cancelable.\nIf the `value` property contains `_id` then the object will be updated.\n\n#### Properties\n\n`value` (`object`) - Environment datastore object.\n\n### environment-deleted\n\nDeletes an environment. This event have to be cancelable.\n\n#### Properties\n`value` (`string`) - The `_id` property of the environment object.\n\n### environment-current\n\nRequest for current environment information. This event have to be cancelable.\nThe manager will set a `value` property on the details object so the event\nsource should read it after the event is dispatched.\n\nNote: you have to set a detail object or otherwise it won't be created after\nthe event is dispatched.\n\n```javascript\nconst e = new CustomEvent('environment-current', {\n   bubbles: true,\n   composed: true,\n   cancelable: true,\n   detail: {}\n});\ndocument.dispatchEvent(e);\nif (e.defaultPrevented) {\n   console.log(e.detail.value); // Current environment\n}\n```\n\n### environment-list\n\nRequest for current environments list information. This event have to be\ncancelable. The manager will set a `value` property on the details object so\nthe event source should read it after the event is dispatched.\n\nNote: you have to set a detail object or otherwise it won't be created after\nthe event is dispatched.\n\nNote: The value contains a list of user created environments (without\nthe `default` environment). Therefore it can be `undefined` or empty array.\n\n```javascript\nconst e = new CustomEvent('environment-list', {\n   bubbles: true,\n   composed: true,\n   cancelable: true,\n   detail: {}\n});\ndocument.dispatchEvent(e);\nif (e.defaultPrevented) {\n   console.log(e.detail.value); // All available environments.\n}\n```\n\n### variable-updated\n\nUpdates or creates new variable. This event have to be cancelable.\nIf the `value` property contains `_id` then the object will be updated.\n\n#### Properties\n\n`value` (`object`) - Variable datastore object.\n\nThe object must contain `variable` (variable name), `value` (it's body) and\n`environment` properties. Otherwise an error will be throw.\n\n### variable-deleted\n\nDeletes an environment. This event have to be cancelable.\n\n#### Properties\n\n`value` (`string`) - The `_id` property of the variable object.\n\n### variable-list\n\nRequest for current variables list information. This event have to be\ncancelable. The manager will set a `value` property on the details object so\nthe event source should read it after the event is dispatched.\n\nNote: you have to set a detail object or otherwise it won't be created after\nthe event is dispatched.\n\nNote: The value contains a list of user created variables. Therefore it can be\n`undefined` or empty array.\n\nNote: Additional `environment` property is set to the `detail` object to indicate\nto which environment the variables belongs.\n\n```javascript\nconst e = new CustomEvent('variable-list', {\n   bubbles: true,\n   composed: true,\n   cancelable: true,\n   detail: {}\n});\ndocument.dispatchEvent(e);\nif (e.defaultPrevented) {\n   console.log(e.detail.value); // All available variables.\n   console.log(e.detail.environment); // Environment name.\n}\n```\n\n## New in version 2\n\n- PouchDB is optional dependency. Add your own version of PouchDB to use the\ncomponent.",
+      "summary": "",
+      "path": "variables-manager.html",
+      "properties": [
+        {
+          "name": "eventsTarget",
+          "type": "Object | null | undefined",
+          "description": "Events handlers target. By default the element listens on\n`window` object. If set, all events listeners will be attached to this\nobject instead of `window`.",
+          "privacy": "public",
+          "sourceRange": {
+            "file": "../events-target-behavior/events-target-behavior.html",
+            "start": {
+              "line": 73,
+              "column": 8
+            },
+            "end": {
+              "line": 76,
+              "column": 9
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "observer": "\"_eventsTargetChanged\"",
+              "attributeType": "Object"
+            }
+          },
+          "inheritedFrom": "ArcBehaviors.EventsTargetBehavior"
+        },
+        {
+          "name": "_oldEventsTarget",
+          "type": "Object | null | undefined",
+          "description": "An event target used to attach listeners.",
+          "privacy": "protected",
+          "sourceRange": {
+            "file": "../events-target-behavior/events-target-behavior.html",
+            "start": {
+              "line": 78,
+              "column": 8
+            },
+            "end": {
+              "line": 78,
+              "column": 32
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "attributeType": "Object"
+            }
+          },
+          "inheritedFrom": "ArcBehaviors.EventsTargetBehavior"
+        },
+        {
+          "name": "systemVariables",
+          "type": "Array",
+          "description": "Returns a list of system variables.\nThis returns a value only if the element is executed in node environment.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 256,
+              "column": 2
+            },
+            "end": {
+              "line": 273,
+              "column": 3
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "readOnly": true
+            }
+          }
+        },
+        {
+          "name": "_envDb",
+          "type": "Object",
+          "description": "Handler to the environments database.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 280,
+              "column": 2
+            },
+            "end": {
+              "line": 283,
+              "column": 3
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "readOnly": true
+            }
+          }
+        },
+        {
+          "name": "_varDb",
+          "type": "Object",
+          "description": "Handler to the variables database.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 289,
+              "column": 2
+            },
+            "end": {
+              "line": 291,
+              "column": 3
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "readOnly": true
+            }
+          }
+        },
+        {
+          "name": "environment",
+          "type": "string | null | undefined",
+          "description": "Currently loaded environemnt.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 219,
+              "column": 6
+            },
+            "end": {
+              "line": 223,
+              "column": 7
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "observer": "\"_environmentChanged\"",
+              "attributeType": "String"
+            }
+          },
+          "defaultValue": "\"default\""
+        },
+        {
+          "name": "environments",
+          "type": "Array | null | undefined",
+          "description": "List of available environments (except for \"default\").",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 227,
+              "column": 6
+            },
+            "end": {
+              "line": 230,
+              "column": 7
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "notify": false,
+              "attributeType": "Array"
+            }
+          }
+        },
+        {
+          "name": "variables",
+          "type": "Array | null | undefined",
+          "description": "List of variables associated with current `environment`.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 234,
+              "column": 6
+            },
+            "end": {
+              "line": 234,
+              "column": 22
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "attributeType": "Array"
+            }
+          }
+        },
+        {
+          "name": "inMemVariables",
+          "type": "Array | null | undefined",
+          "description": "List of variables that overrides all existing variables\n(system or app) and exists only in memory.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 239,
+              "column": 6
+            },
+            "end": {
+              "line": 239,
+              "column": 27
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "attributeType": "Array"
+            }
+          }
+        }
+      ],
+      "methods": [
+        {
+          "name": "connectedCallback",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 308,
+              "column": 2
+            },
+            "end": {
+              "line": 311,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "disconnectedCallback",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "file": "../events-target-behavior/events-target-behavior.html",
+            "start": {
+              "line": 86,
+              "column": 5
+            },
+            "end": {
+              "line": 91,
+              "column": 6
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {
+            "type": "void"
+          },
+          "inheritedFrom": "ArcBehaviors.EventsTargetBehavior"
+        },
+        {
+          "name": "_eventsTargetChanged",
+          "description": "Removes old handlers (if any) and attaches listeners on new event\nevent target.",
+          "privacy": "protected",
+          "sourceRange": {
+            "file": "../events-target-behavior/events-target-behavior.html",
+            "start": {
+              "line": 99,
+              "column": 4
+            },
+            "end": {
+              "line": 105,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "eventsTarget",
+              "type": "?Node",
+              "description": "Event target to set handlers on. If not set it\nwill set handlers on the `window` object."
+            }
+          ],
+          "return": {
+            "type": "void"
+          },
+          "inheritedFrom": "ArcBehaviors.EventsTargetBehavior"
+        },
+        {
+          "name": "_attachListeners",
+          "description": "",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 313,
+              "column": 2
+            },
+            "end": {
+              "line": 334,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "node"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_detachListeners",
+          "description": "",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 336,
+              "column": 2
+            },
+            "end": {
+              "line": 348,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "node"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_environmentChanged",
+          "description": "Handler for the `environment` property change.\n\nFires a `selected-environment-changed` custom event and updates list of variables\nin the environment.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 355,
+              "column": 2
+            },
+            "end": {
+              "line": 369,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "environment"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_environmentsChanged",
+          "description": "Handler for the `environments` property change.\n\nFires a `environments-list-changed` custom event.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 375,
+              "column": 2
+            },
+            "end": {
+              "line": 394,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "record"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_variablesChanged",
+          "description": "Handler for the `variables` property change.\nFires a `variables-list-changed` custom event.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 399,
+              "column": 2
+            },
+            "end": {
+              "line": 404,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_inMemVariablesChanged",
+          "description": "",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 406,
+              "column": 2
+            },
+            "end": {
+              "line": 414,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "record"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "listAllVariables",
+          "description": "Lists app, sys and in mem variables in single array.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 419,
+              "column": 2
+            },
+            "end": {
+              "line": 446,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {
+            "type": "Array.<Object>",
+            "desc": "List of all variables."
+          }
+        },
+        {
+          "name": "_notifyVarsListChanged",
+          "description": "Combines both app variables and in memory variables\nand informs listeners about the change.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 451,
+              "column": 2
+            },
+            "end": {
+              "line": 460,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_updateEnvironmentsList",
+          "description": "Get's a list of environments and updates the `environments` property.\n\nThis task is asynchronus.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 466,
+              "column": 2
+            },
+            "end": {
+              "line": 470,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": []
+        },
+        {
+          "name": "_updateVariablesList",
+          "description": "Updates the list of variables for current environment.\n\nThis task is asynchronus.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 476,
+              "column": 2
+            },
+            "end": {
+              "line": 496,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "listEnvironments",
+          "description": "Lists all user defined environments.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 502,
+              "column": 2
+            },
+            "end": {
+              "line": 509,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {
+            "type": "Promise",
+            "desc": "Resolved promise with the list of environments."
+          }
+        },
+        {
+          "name": "listVariables",
+          "description": "Refreshes list of variables for the `environemnt`.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 518,
+              "column": 2
+            },
+            "end": {
+              "line": 535,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "environment"
+            }
+          ],
+          "return": {
+            "type": "Promise",
+            "desc": "Resolved promise with the list of variables for the\nenvironment."
+          }
+        },
+        {
+          "name": "_handleException",
+          "description": "Handles exceptions when occur by logging them to the console and\nsending an analytics report.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 542,
+              "column": 2
+            },
+            "end": {
+              "line": 553,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "cause",
+              "type": "Error",
+              "description": "An error object with description."
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_envChnageHandler",
+          "description": "A handler for the `selected-environment-changed` custom event.\nUpdates the `environment` property if the event was sent by other elemenet\nthan `this`.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 559,
+              "column": 2
+            },
+            "end": {
+              "line": 566,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_dataImportHandler",
+          "description": "Handler for the `data-imported` custom event. Refreshes list of environmants\nand variables.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 571,
+              "column": 2
+            },
+            "end": {
+              "line": 574,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_eventCancelled",
+          "description": "",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 576,
+              "column": 2
+            },
+            "end": {
+              "line": 584,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e"
+            }
+          ]
+        },
+        {
+          "name": "_cancelEvent",
+          "description": "",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 586,
+              "column": 2
+            },
+            "end": {
+              "line": 589,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_envUpdateHandler",
+          "description": "A handler for the `environment-updated` custom event.\nUpdates the environment in the data store.\n\nThe `environment-updated` custom event should be cancellable or the event\nwon't be handled at all.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 597,
+              "column": 2
+            },
+            "end": {
+              "line": 603,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_envDeleteHandler",
+          "description": "A handler for the `environment-deleted` custom event.\nDeletes a variable in the data store.\n\nThe `environment-deleted` custom event should be cancellable or the event\nwon't be handled at all.\n\nThe delete function fires non cancellable `environment-deleted` custom\nevent so the UI components can use it to update their values.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 614,
+              "column": 2
+            },
+            "end": {
+              "line": 620,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_envGetCurrentHandler",
+          "description": "A handler for the `environment-current` custom event.\nAdds a `value` propety of the event `detail` object with the name of the\nenvironment.\n\nThe `environment-current` custom event should be cancellable or the event\nwon't be handled at all.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 629,
+              "column": 2
+            },
+            "end": {
+              "line": 635,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_envListHandler",
+          "description": "A handler for the `environment-list` custom event.\nAdds a `value` propety of the event `detail` object with the array of the\nuser defined environments objects. Each item is a PouchDb data store item\n(with `_id` and `_rev`).\n\nThe `value` set on the details object can be undefined if the user haven't\ndefined any environments or if the manager haven't restored the list yet.\nIn the later case the event target element should listen for\n`environments-list-changed` event to update the list of available environments.\n\nThe `environment-current` custom event should be cancellable or the event\nwon't be handled at all.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 650,
+              "column": 2
+            },
+            "end": {
+              "line": 656,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "updateEnvironment",
+          "description": "Updates an environment value.\n\nIf the `value` doesn't contains the `_id` property a new environment will\nbe created. The `_rev` property will be always updated to the latest value.\n\nAfter finish this method sends the `environment-updated` event that can't\nbe cancelled so other managers that are present in the DOM will not update\nthe value.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 675,
+              "column": 2
+            },
+            "end": {
+              "line": 738,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "data",
+              "type": "Object",
+              "description": "A PouchDB object to be stored. It should contain the\n`_id` property if the object is about to be updated. If the `_id` doesn't\nexists a new object is created."
+            },
+            {
+              "name": "e",
+              "type": "?Event",
+              "description": "Optional. If it is called from the event handler, this\nis the event object. If initial validation fails then it will set `error`\nproperty on the `detail` object."
+            }
+          ],
+          "return": {
+            "type": "Promise"
+          }
+        },
+        {
+          "name": "__updateEnvironmentItem",
+          "description": "Updated the item in the `environments` array propery.\nEither add new property or updates existing one.",
+          "privacy": "private",
+          "sourceRange": {
+            "start": {
+              "line": 745,
+              "column": 2
+            },
+            "end": {
+              "line": 760,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "data",
+              "type": "Object",
+              "description": "The PouchDB object."
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "__updateEnvironmentName",
+          "description": "A special case when the name of the environment changes.\nIt updates any related to this environment variables.\n\nIf this is current environment it also changes its name.",
+          "privacy": "private",
+          "sourceRange": {
+            "start": {
+              "line": 770,
+              "column": 2
+            },
+            "end": {
+              "line": 797,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "oldName",
+              "type": "String",
+              "description": "Name of the environment befoe the change"
+            },
+            {
+              "name": "data",
+              "type": "String",
+              "description": "Updated data store entry"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "deleteEnvironment",
+          "description": "Deletes an environment from the data store.\n\nAfter updating the data store this method sends the `environment-deleted`\nevent that can't be cancelled so other managers that are present in the DOM\nwill not update the value again. If you don't need updated `_rev` you don't\nhave to listen for this event.\n\nBecause this function changes the `environments` array the\n`environments-list-changed` event is fired alongside the `environment-deleted`\nevent.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 816,
+              "column": 2
+            },
+            "end": {
+              "line": 861,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "id",
+              "type": "Object",
+              "description": "The PouchDB `_id` property of the object to delete."
+            },
+            {
+              "name": "e",
+              "type": "?Event",
+              "description": "Optional. If it is called from the event handler, this\nis the event object. If initial validation fails then it will set `error`\nproperty on the `detail` object."
+            }
+          ],
+          "return": {
+            "type": "Promise"
+          }
+        },
+        {
+          "name": "_afterDeleteEnvironment",
+          "description": "To be called after the environment has been deleted. It clears variables\nfor the environment and if the environment is currently loaded environment\nthen it clear cuerrent data.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 869,
+              "column": 2
+            },
+            "end": {
+              "line": 907,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "environment",
+              "type": "String",
+              "description": "The environment name."
+            }
+          ]
+        },
+        {
+          "name": "_varUpdateHandler",
+          "description": "A handler for the `variable-updated` custom event.\nUpdates the variable in the data store.\n\nThe `variable-updated` custom event should be cancellable or the event\nwon't be handled at all.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 915,
+              "column": 2
+            },
+            "end": {
+              "line": 921,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_varDeleteHandler",
+          "description": "Deletes a variable from the data store.\n\nIf the `value` doesn't contains the `_id` property a new environment will\nbe created. The `_rev` property will be always updated to the latest value.\n\nAfter finish this method sends the `environment-deleted` event that can't\nbe cancelled so other managers that are present in the DOM will not update\nthe value. If you don't need database record updated `_rev` you don't\nhave to listen for this event.\n\nBecause this function changes the `environments` array the\n`environments-list-changed` event is fired alongside the `environment-deleted`\nevent.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 942,
+              "column": 2
+            },
+            "end": {
+              "line": 948,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e",
+              "type": "?Event",
+              "description": "Optional. If it is called from the event handler, this\nis the event object. If initial validation fails then it will set `error`\nproperty on the `detail` object."
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_varListHandler",
+          "description": "A handler for the `variable-list` custom event.\n\nAdds a `value` propety of the event `detail` object with the array of the\nvariables restored for current environment. Each item is a PouchDb data\nstore item (with `_id` and `_rev`).\n\nThe `value` set on the details object can be undefined if the this of\nvariables haven't been read yet or if the yser haven't defined any\nvariable for this environment.\nIn the first case the event target element should listen for\n`variables-list-changed` event to update the list of available variables for\ncurrent environment.\n\nAdditionally it sets the `environment` property on the `detail` object\nwith the name of current environment.\n\nList of properties added to the detail object is consistent with the\n`variables-list-changed` event fired by this event.\n\nThe `variable-list` custom event should be cancellable or the event\nwon't be handled at all. It's to prohibit handling the event by many\nmanagers (if more than one is in the DOM).",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 973,
+              "column": 2
+            },
+            "end": {
+              "line": 980,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "updateVariable",
+          "description": "Updates a variable value.\n\nIf the `value` doesn't contains the `_id` property a new variable will\nbe created. The `_rev` property will be always updated to the latest value\nso there's no need to set it on the object.\n\nAfter saving the data this method sends the `variable-updated` event that\ncan't be cancelled so other managers that are present in the DOM will not\nupdate the value again.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 1000,
+              "column": 2
+            },
+            "end": {
+              "line": 1047,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "data",
+              "type": "Object",
+              "description": "A PouchDB object to be stored. It should contain the\n`_id` property if the object is about to be updated. If the `_id` doesn't\nexists a new object is created."
+            },
+            {
+              "name": "e",
+              "type": "?Event",
+              "description": "Optional. If it is called from the event handler, this\nis the event object. If initial validation fails then it will set `error`\nproperty on the `detail` object."
+            }
+          ],
+          "return": {
+            "type": "Promise"
+          }
+        },
+        {
+          "name": "__updateVariableItem",
+          "description": "Updated the item in the `variables` array propery.\nEither add new property or updates existing one.",
+          "privacy": "private",
+          "sourceRange": {
+            "start": {
+              "line": 1055,
+              "column": 2
+            },
+            "end": {
+              "line": 1073,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "data",
+              "type": "Object",
+              "description": "The PouchDB object."
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "deleteVariable",
+          "description": "Deletes a variable from the data store.\n\nAfter updating the data store this method sends the `variable-deleted`\nevent that can't be cancelled so other managers that are present in the DOM\nwill not update the value again. If you don't need updated `_rev` you don't\nhave to listen for this event.\n\nBecause this function changes the `variables` array the\n`variables-list-changed` event is fired alongside the `variable-deleted`\nevent.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 1092,
+              "column": 2
+            },
+            "end": {
+              "line": 1131,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "id",
+              "type": "Object",
+              "description": "The PouchDB `_id` property of the object to delete."
+            },
+            {
+              "name": "e",
+              "type": "?Event",
+              "description": "Optional. If it is called from the event handler, this\nis the event object. If initial validation fails then it will set `error`\nproperty on the `detail` object."
+            }
+          ],
+          "return": {
+            "type": "Promise"
+          }
+        },
+        {
+          "name": "_varStoreActionHandler",
+          "description": "",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 1133,
+              "column": 2
+            },
+            "end": {
+              "line": 1154,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e"
+            }
+          ]
+        },
+        {
+          "name": "_varUpdateActionHandler",
+          "description": "",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 1156,
+              "column": 2
+            },
+            "end": {
+              "line": 1175,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        }
+      ],
+      "staticMethods": [],
+      "demos": [
+        {
+          "url": "demo/index.html",
+          "description": ""
+        }
+      ],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 212,
+          "column": 0
+        },
+        "end": {
+          "line": 1260,
+          "column": 1
+        }
+      },
+      "privacy": "public",
+      "superclass": "HTMLElement",
+      "name": "LogicElements.VariablesManager",
+      "attributes": [
+        {
+          "name": "events-target",
+          "description": "Events handlers target. By default the element listens on\n`window` object. If set, all events listeners will be attached to this\nobject instead of `window`.",
+          "sourceRange": {
+            "file": "../events-target-behavior/events-target-behavior.html",
+            "start": {
+              "line": 73,
+              "column": 8
+            },
+            "end": {
+              "line": 76,
+              "column": 9
+            }
+          },
+          "metadata": {},
+          "type": "Object | null | undefined",
+          "inheritedFrom": "ArcBehaviors.EventsTargetBehavior"
+        },
+        {
+          "name": "environment",
+          "description": "Currently loaded environemnt.",
+          "sourceRange": {
+            "start": {
+              "line": 219,
+              "column": 6
+            },
+            "end": {
+              "line": 223,
+              "column": 7
+            }
+          },
+          "metadata": {},
+          "type": "string | null | undefined"
+        },
+        {
+          "name": "environments",
+          "description": "List of available environments (except for \"default\").",
+          "sourceRange": {
+            "start": {
+              "line": 227,
+              "column": 6
+            },
+            "end": {
+              "line": 230,
+              "column": 7
+            }
+          },
+          "metadata": {},
+          "type": "Array | null | undefined"
+        },
+        {
+          "name": "variables",
+          "description": "List of variables associated with current `environment`.",
+          "sourceRange": {
+            "start": {
+              "line": 234,
+              "column": 6
+            },
+            "end": {
+              "line": 234,
+              "column": 22
+            }
+          },
+          "metadata": {},
+          "type": "Array | null | undefined"
+        },
+        {
+          "name": "in-mem-variables",
+          "description": "List of variables that overrides all existing variables\n(system or app) and exists only in memory.",
+          "sourceRange": {
+            "start": {
+              "line": 239,
+              "column": 6
+            },
+            "end": {
+              "line": 239,
+              "column": 27
+            }
+          },
+          "metadata": {},
+          "type": "Array | null | undefined"
+        }
+      ],
+      "events": [
+        {
+          "type": "CustomEvent",
+          "name": "environment-deleted",
+          "description": "Fired when the environment has been deleted from the data store.\n\nEvent fired by this element is not cancellable. While request to delete\nan evironment is cancellable (implementations cancels the event so it will\nbe deleted only once) this event isn't, to differentiate between this two\nstates. Generally: cancellable event - request for change, not cancellable\nevent - change has been applied to the data in the data store.",
+          "metadata": {}
+        },
+        {
+          "type": "CustomEvent",
+          "name": "environment-updated",
+          "description": "Fired when the environment has been saved / updated in the data store.\n\nEvent fired by this element is not cancellable. While request to update\nan evironment is cancellable (implementations cancels the event so it will\nbe updated only once) this event isn't, to differentiate between this two\nstates. Generally: cancellable event - request for change, not cancellable\nevent - change has been applied to the data in the data store.",
+          "metadata": {}
+        },
+        {
+          "type": "CustomEvent",
+          "name": "environments-list-changed",
+          "description": "Fired when the list of available custom envrionments have been updated.\nUsually it means that the element has been initialized or the `environment`\nproperty has changed. UIs should update list of available environments from\nthis events.\n\nThe list do not contain the default environment.",
+          "metadata": {}
+        },
+        {
+          "type": "CustomEvent",
+          "name": "selected-environment-changed",
+          "description": "Fired when selected environment has changed.\nThis event is not fired if the change has been causes by the\n`selected-environment-changed` fired by other element.",
+          "metadata": {}
+        },
+        {
+          "type": "CustomEvent",
+          "name": "variable-deleted",
+          "description": "Fired when the variable has been deleted from the data store.\n\nEvent fired by this element is not cancellable. While request to delete\na variable is cancellable (implementations cancels the event so it will\nbe deleted only once) this event isn't, to differentiate between this two\nstates. Generally: cancellable event - request for change, not cancellable\nevent - change has been applied to the data in the data store.",
+          "metadata": {}
+        },
+        {
+          "type": "CustomEvent",
+          "name": "variable-updated",
+          "description": "Fired when the variable has been added to / updated in the data store.\n\nEvent fired by this element is not cancellable. While request to delete\nan evironment is cancellable (implementations cancels the event so it will\nbe deleted only once) this event isn't, to differentiate between this two\nstates. Generally: cancellable event - request for change, not cancellable\nevent - change has been applied to the data in the data store.",
+          "metadata": {}
+        },
+        {
+          "type": "CustomEvent",
+          "name": "variables-list-changed",
+          "description": "Fired when the list of variables for current environment has been read\nand set. UIs should update list of current varables from\nthis events.",
+          "metadata": {}
+        }
+      ],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "slots": [],
+      "tagname": "variables-manager",
+      "mixins": [
+        "ArcBehaviors.EventsTargetBehavior"
+      ]
+    }
+  ]
 }
