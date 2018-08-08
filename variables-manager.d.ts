@@ -9,7 +9,6 @@
  */
 
 /// <reference path="../polymer/types/polymer-element.d.ts" />
-/// <reference path="../app-pouchdb/pouchdb.d.ts" />
 /// <reference path="../events-target-behavior/events-target-behavior.d.ts" />
 
 declare namespace LogicElements {
@@ -25,7 +24,8 @@ declare namespace LogicElements {
    * ```
    *
    * This element is designed to work with browser's event system. That means that
-   * each operation can be done by dispatching [CustomEvent](https://developer.mozilla.org/en/docs/Web/API/CustomEvent).
+   * each operation can be done by dispatching
+   * [CustomEvent](https://developer.mozilla.org/en/docs/Web/API/CustomEvent).
    *
    * **Important** Events that request data update (create/update/delete) must be
    * cancellable. Otherwise the element will not handle the event at all.
@@ -197,6 +197,14 @@ declare namespace LogicElements {
    *    console.log(e.detail.environment); // Environment name.
    * }
    * ```
+   *
+   * ## New in version 2
+   *
+   * - PouchDB is optional dependency. Add your own version of PouchDB to use the
+   * component.
+   * - `environment-updated`, `environment-deleted`, `variable-updated`, and
+   * `variable-deleted` events always set `result` on the detail object with the
+   * promise. It does not set `error` property anymore.
    */
   class VariablesManager extends
     ArcBehaviors.EventsTargetBehavior(
@@ -219,7 +227,7 @@ declare namespace LogicElements {
     readonly _varDb: object|null;
 
     /**
-     * Currently loaded environemnt.
+     * Currently loaded environment.
      */
     environment: string|null|undefined;
 
@@ -248,14 +256,16 @@ declare namespace LogicElements {
      * Fires a `selected-environment-changed` custom event and updates list of variables
      * in the environment.
      */
-    _environmentChanged(environment: any): void;
+    _environmentChanged(environment: String|null): void;
 
     /**
      * Handler for the `environments` property change.
      *
      * Fires a `environments-list-changed` custom event.
+     *
+     * @param record Polymer's change record
      */
-    _environmentsChanged(record: any): void;
+    _environmentsChanged(record: object|null): void;
 
     /**
      * Handler for the `variables` property change.
@@ -282,7 +292,7 @@ declare namespace LogicElements {
      *
      * This task is asynchronus.
      */
-    _updateEnvironmentsList(): any;
+    _updateEnvironmentsList(): Promise<any>|null;
 
     /**
      * Updates the list of variables for current environment.
@@ -299,12 +309,14 @@ declare namespace LogicElements {
     listEnvironments(): Promise<any>|null;
 
     /**
-     * Refreshes list of variables for the `environemnt`.
+     * Refreshes list of variables for the `environment`.
      *
+     * @param environment Name of the environment to get the variables
+     * from. If not set then `default` fill be used.
      * @returns Resolved promise with the list of variables for the
      * environment.
      */
-    listVariables(environment: any): Promise<any>|null;
+    listVariables(environment: String|null): Promise<any>|null;
 
     /**
      * Handles exceptions when occur by logging them to the console and
@@ -319,7 +331,7 @@ declare namespace LogicElements {
      * Updates the `environment` property if the event was sent by other elemenet
      * than `this`.
      */
-    _envChnageHandler(e: any): void;
+    _envChnageHandler(e: CustomEvent|null): void;
 
     /**
      * Handler for the `data-imported` custom event. Refreshes list of environmants
@@ -336,7 +348,7 @@ declare namespace LogicElements {
      * The `environment-updated` custom event should be cancellable or the event
      * won't be handled at all.
      */
-    _envUpdateHandler(e: any): void;
+    _envUpdateHandler(e: CustomEvent|null): void;
 
     /**
      * A handler for the `environment-deleted` custom event.
@@ -348,7 +360,7 @@ declare namespace LogicElements {
      * The delete function fires non cancellable `environment-deleted` custom
      * event so the UI components can use it to update their values.
      */
-    _envDeleteHandler(e: any): void;
+    _envDeleteHandler(e: CustomEvent|null): void;
 
     /**
      * A handler for the `environment-current` custom event.
@@ -358,7 +370,7 @@ declare namespace LogicElements {
      * The `environment-current` custom event should be cancellable or the event
      * won't be handled at all.
      */
-    _envGetCurrentHandler(e: any): void;
+    _envGetCurrentHandler(e: CustomEvent|null): void;
 
     /**
      * A handler for the `environment-list` custom event.
@@ -374,7 +386,7 @@ declare namespace LogicElements {
      * The `environment-current` custom event should be cancellable or the event
      * won't be handled at all.
      */
-    _envListHandler(e: any): void;
+    _envListHandler(e: CustomEvent|null): void;
 
     /**
      * Updates an environment value.
@@ -389,11 +401,8 @@ declare namespace LogicElements {
      * @param data A PouchDB object to be stored. It should contain the
      * `_id` property if the object is about to be updated. If the `_id` doesn't
      * exists a new object is created.
-     * @param e Optional. If it is called from the event handler, this
-     * is the event object. If initial validation fails then it will set `error`
-     * property on the `detail` object.
      */
-    updateEnvironment(data: object|null, e: Event|null): Promise<any>|null;
+    updateEnvironment(data: object|null): Promise<any>|null;
 
     /**
      * Deletes an environment from the data store.
@@ -408,11 +417,8 @@ declare namespace LogicElements {
      * event.
      *
      * @param id The PouchDB `_id` property of the object to delete.
-     * @param e Optional. If it is called from the event handler, this
-     * is the event object. If initial validation fails then it will set `error`
-     * property on the `detail` object.
      */
-    deleteEnvironment(id: object|null, e: Event|null): Promise<any>|null;
+    deleteEnvironment(id: object|null): Promise<any>|null;
 
     /**
      * To be called after the environment has been deleted. It clears variables
@@ -421,7 +427,7 @@ declare namespace LogicElements {
      *
      * @param environment The environment name.
      */
-    _afterDeleteEnvironment(environment: String|null): any;
+    _afterDeleteEnvironment(environment: String|null): Promise<any>|null;
 
     /**
      * A handler for the `variable-updated` custom event.
@@ -430,7 +436,7 @@ declare namespace LogicElements {
      * The `variable-updated` custom event should be cancellable or the event
      * won't be handled at all.
      */
-    _varUpdateHandler(e: any): void;
+    _varUpdateHandler(e: CustomEvent|null): void;
 
     /**
      * Deletes a variable from the data store.
@@ -477,7 +483,7 @@ declare namespace LogicElements {
      * won't be handled at all. It's to prohibit handling the event by many
      * managers (if more than one is in the DOM).
      */
-    _varListHandler(e: any): void;
+    _varListHandler(e: CustomEvent|null): void;
 
     /**
      * Updates a variable value.
@@ -493,11 +499,8 @@ declare namespace LogicElements {
      * @param data A PouchDB object to be stored. It should contain the
      * `_id` property if the object is about to be updated. If the `_id` doesn't
      * exists a new object is created.
-     * @param e Optional. If it is called from the event handler, this
-     * is the event object. If initial validation fails then it will set `error`
-     * property on the `detail` object.
      */
-    updateVariable(data: object|null, e: Event|null): Promise<any>|null;
+    updateVariable(data: object|null): Promise<any>|null;
 
     /**
      * Deletes a variable from the data store.
@@ -512,11 +515,8 @@ declare namespace LogicElements {
      * event.
      *
      * @param id The PouchDB `_id` property of the object to delete.
-     * @param e Optional. If it is called from the event handler, this
-     * is the event object. If initial validation fails then it will set `error`
-     * property on the `detail` object.
      */
-    deleteVariable(id: object|null, e: Event|null): Promise<any>|null;
+    deleteVariable(id: object|null): Promise<any>|null;
     _varStoreActionHandler(e: any): any;
     _varUpdateActionHandler(e: any): void;
   }
