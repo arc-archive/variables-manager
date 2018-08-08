@@ -214,7 +214,7 @@ the License.
  * @appliesMixin ArcBehaviors.EventsTargetBehavior
  */
 class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element) {
-  static get is() { return 'variables-manager'; }
+  static get is() {return 'variables-manager';}
   static get properties() {
     return {
       /**
@@ -354,6 +354,8 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    *
    * Fires a `selected-environment-changed` custom event and updates list of variables
    * in the environment.
+   *
+   * @param {String} environment
    */
   _environmentChanged(environment) {
     this.variables = undefined;
@@ -374,6 +376,8 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * Handler for the `environments` property change.
    *
    * Fires a `environments-list-changed` custom event.
+   *
+   * @param {Object} record Polymer's change record
    */
   _environmentsChanged(record) {
     if (this._cancelEnvironmentsChangeEvent) {
@@ -465,6 +469,8 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * Get's a list of environments and updates the `environments` property.
    *
    * This task is asynchronus.
+   *
+   * @return {Promise}
    */
   _updateEnvironmentsList() {
     return this.listEnvironments()
@@ -558,6 +564,8 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * A handler for the `selected-environment-changed` custom event.
    * Updates the `environment` property if the event was sent by other elemenet
    * than `this`.
+   *
+   * @param {CustomEvent} e
    */
   _envChnageHandler(e) {
     if (e.composedPath()[0] === this) {
@@ -596,6 +604,8 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    *
    * The `environment-updated` custom event should be cancellable or the event
    * won't be handled at all.
+   *
+   @param {CustomEvent} e
    */
   _envUpdateHandler(e) {
     if (this._eventCancelled(e)) {
@@ -613,6 +623,8 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    *
    * The delete function fires non cancellable `environment-deleted` custom
    * event so the UI components can use it to update their values.
+   *
+   * @param {CustomEvent} e
    */
   _envDeleteHandler(e) {
     if (this._eventCancelled(e)) {
@@ -628,6 +640,8 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    *
    * The `environment-current` custom event should be cancellable or the event
    * won't be handled at all.
+   *
+   * @param {CustomEvent} e
    */
   _envGetCurrentHandler(e) {
     if (this._eventCancelled(e)) {
@@ -649,6 +663,8 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    *
    * The `environment-current` custom event should be cancellable or the event
    * won't be handled at all.
+   *
+   * @param {CustomEvent} e
    */
   _envListHandler(e) {
     if (this._eventCancelled(e)) {
@@ -856,6 +872,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * then it clear cuerrent data.
    *
    * @param {String} environment The environment name.
+   * @return {Promise}
    */
   _afterDeleteEnvironment(environment) {
     if (!environment) {
@@ -902,6 +919,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    *
    * The `variable-updated` custom event should be cancellable or the event
    * won't be handled at all.
+   * @param {CustomEvent} e
    */
   _varUpdateHandler(e) {
     if (this._eventCancelled(e)) {
@@ -925,8 +943,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * `environments-list-changed` event is fired alongside the `environment-deleted`
    * event.
    *
-   * @param {Object} id The PouchDB `_id` property of the object to delete.
-   * @param {?Event} e Optional. If it is called from the event handler, this
+   * @param {Event} e Optional. If it is called from the event handler, this
    * is the event object. If initial validation fails then it will set `error`
    * property on the `detail` object.
    */
@@ -960,6 +977,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * The `variable-list` custom event should be cancellable or the event
    * won't be handled at all. It's to prohibit handling the event by many
    * managers (if more than one is in the DOM).
+   * @param {CustomEvent} e
    */
   _varListHandler(e) {
     if (this._eventCancelled(e)) {
@@ -1078,7 +1096,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     }
     const db = this._varDb;
     return db.get(id)
-    .then((doc) =>  db.remove(doc))
+    .then((doc) => db.remove(doc))
     .then((result) => {
       if (!result.ok) {
         return this._handleException(result);
