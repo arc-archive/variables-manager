@@ -876,11 +876,11 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    */
   _afterDeleteEnvironment(environment) {
     if (!environment) {
-      return;
+      return Promise.resolve();
     }
     environment = environment.toLowerCase();
     if (environment === 'default') {
-      return;
+      return Promise.resolve();
     }
 
     let promise;
