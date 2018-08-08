@@ -218,7 +218,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
   static get properties() {
     return {
       /**
-       * Currently loaded environemnt.
+       * Currently loaded environment.
        */
       environment: {
         type: String,
@@ -262,7 +262,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     if (typeof process === 'undefined' || typeof process.env === 'undefined') {
       return value;
     }
-    const name = this.environemnt;
+    const name = this.environment;
     Object.keys(process.env).forEach(function(env) {
       const obj = {
         variable: env,
@@ -484,11 +484,11 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     this.listVariables(currentEnv)
     .then((variables) => {
       if (currentEnv !== this.environment) {
-        // In some cases (changing environemnt right after initialization)
+        // In some cases (changing environment right after initialization)
         // this may actually happen. Especially on slow IE.
         let msg = 'Skipping setting variables list. Environment changed ';
         msg += 'from %s to %s';
-        console.info(msg, currentEnv, this.environemnt);
+        console.info(msg, currentEnv, this.environment);
         return;
       }
       variables = variables || [];
@@ -511,9 +511,9 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     .then((docs) => docs.rows.map((i) => i.doc));
   }
   /**
-   * Refreshes list of variables for the `environemnt`.
+   * Refreshes list of variables for the `environment`.
    *
-   * @param {?String} environemnt Name of the environment to get the variables
+   * @param {?String} environment Name of the environment to get the variables
    * from. If not set then `default` fill be used.
    * @return {Promise} Resolved promise with the list of variables for the
    * environment.
@@ -1115,7 +1115,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
       value: e.detail.value,
       enabled: true,
       sysVar: false,
-      environment: this.environemnt
+      environment: this.environment
     };
     if (!this.variables) {
       e.detail.result = this.updateVariable(obj);
