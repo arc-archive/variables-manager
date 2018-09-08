@@ -6,12 +6,13 @@
     <script src="helper.js"></script>
     <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
-    <link rel="import" href="../variables-manager.html">
     <link rel="import" href="../../app-pouchdb/pouchdb.html">
+    <link rel="import" href="../../arc-models/variables-model.html">
+    <link rel="import" href="../variables-manager.html">
   </head>
   <body>
-
-    <test-fixture id="basic">
+    <variables-model></variables-model>
+    <test-fixture id="Basic">
       <template>
         <variables-manager></variables-manager>
       </template>
@@ -26,32 +27,31 @@
 
       let element;
       setup(function() {
-        element = fixture('basic');
+        element = fixture('Basic');
       });
 
-      test('Should set an environment', function() {
+      test('Set environment', function() {
         VariablesTestHelper.fire('selected-environment-changed', {
           value: 'test'
         });
         assert.equal(element.environment, 'test');
       });
 
-      test('Should not fire selected-environment-changed', function() {
-        const spy = sinon.spy();
-        element.addEventListener('selected-environment-changed', spy);
-        VariablesTestHelper.fire('selected-environment-changed', {
-          value: 'test'
+      test('Should not fire selected-environment-changed', function(done) {
+        Polymer.RenderStatus.afterNextRender(this, () => {
+          const spy = sinon.spy();
+          element.addEventListener('selected-environment-changed', spy);
+          VariablesTestHelper.fire('selected-environment-changed', {
+            value: 'test'
+          });
+          assert.isFalse(spy.called);
+          done();
         });
-        assert.isFalse(spy.called);
       });
 
-      test('Should fire variables-list-changed', function(done) {
-        let called = false;
-        element.addEventListener('variables-list-changed', function() {
-          if (called) {
-            return;
-          }
-          called = true;
+      test('Dispatches variables-list-changed', function(done) {
+        element.addEventListener('variables-list-changed', function f() {
+          element.removeEventListener('variables-list-changed', f);
           done();
         });
         VariablesTestHelper.fire('selected-environment-changed', {

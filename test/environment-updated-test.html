@@ -8,50 +8,85 @@
     <script src="../../web-component-tester/browser.js"></script>
     <link rel="import" href="../variables-manager.html">
     <link rel="import" href="../../app-pouchdb/pouchdb.html">
+    <link rel="import" href="../../arc-models/variables-model.html">
   </head>
   <body>
-
-    <test-fixture id="basic">
+    <variables-model></variables-model>
+    <test-fixture id="Basic">
       <template>
         <variables-manager></variables-manager>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="Env">
+      <template>
+        <variables-manager environment="test"></variables-manager>
       </template>
     </test-fixture>
 
     <script>
     /* global VariablesTestHelper */
     suite('environment-updated', function() {
-      let databaseRecordId;
+      let createdId;
 
       suiteSetup(function() {
         return VariablesTestHelper.deleteAllDatabases()
         .then(() => VariablesTestHelper.addEnvs('test'))
-        .then((result) => databaseRecordId = result.id);
+        .then((result) => createdId = result.id);
       });
 
       let element;
-      setup(function(done) {
-        element = fixture('basic');
-        VariablesTestHelper.fire('selected-environment-changed', {
-          value: 'test'
-        });
-        element.addEventListener('variables-list-changed', function clb(e) {
-          if (e.detail.value === undefined || e.detail.environment !== 'test') {
-            return;
-          }
+      let updateObject;
+      setup(function() {
+        updateObject = {
+          _id: createdId,
+          name: 'test-name'
+        };
+      });
+
+      test('Does nothing when selected is default', function(done) {
+        element = fixture('Basic');
+        element.addEventListener('initialized-changed', function clb() {
           element.removeEventListener('variables-list-changed', clb);
+          document.body.dispatchEvent(new CustomEvent('environment-updated', {
+            bubbles: true,
+            detail: {
+              value: updateObject
+            }
+          }));
+          assert.isUndefined(element._env);
           done();
         });
       });
 
-      test('The environment-updated event is cancelled', function(done) {
-        let e = VariablesTestHelper.fire('environment-updated', {
-          value: {
-            name: 'test2',
-            _id: databaseRecordId
-          }
+      test('Updates _env property', function(done) {
+        element = fixture('Env');
+        element.addEventListener('initialized-changed', function clb() {
+          element.removeEventListener('variables-list-changed', clb);
+          document.body.dispatchEvent(new CustomEvent('environment-updated', {
+            bubbles: true,
+            detail: {
+              value: updateObject
+            }
+          }));
+          assert.deepEqual(element._env, updateObject);
+          done();
         });
-        assert.isTrue(e.defaultPrevented);
-        done();
+      });
+
+      test('Updates environment name', function(done) {
+        element = fixture('Env');
+        element.addEventListener('initialized-changed', function clb() {
+          element.removeEventListener('variables-list-changed', clb);
+          document.body.dispatchEvent(new CustomEvent('environment-updated', {
+            bubbles: true,
+            detail: {
+              value: updateObject
+            }
+          }));
+          assert.deepEqual(element.environment, updateObject.name);
+          done();
+        });
       });
     });
     </script>

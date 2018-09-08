@@ -49,7 +49,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
         observer: '_environmentChanged'
       },
       /**
-       * Selected environemnt object from the data store if different than
+       * Selected environment object from the data store if different than
        * "default".
        */
       _env: Object,
@@ -71,7 +71,11 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
       _sysVars: {
         type: Array,
         computed: '_computeSysVars(systemVariables)'
-      }
+      },
+      /**
+       * A flag to determine of the component is fully initialized.
+       */
+      initialized: {type: Boolean, readOnly: true, notify: true}
     };
   }
 
@@ -127,15 +131,6 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     node.addEventListener('data-imported', this._dataImportHandler);
     node.addEventListener('variable-store-action', this._varStoreActionHandler);
     node.addEventListener('variable-update-action', this._varUpdateActionHandler);
-    if (this.environment) {
-      this.dispatchEvent(new CustomEvent('selected-environment-changed', {
-        composed: true,
-        bubbles: true,
-        detail: {
-          value: this.environment
-        }
-      }));
-    }
   }
 
   _detachListeners(node) {
@@ -163,7 +158,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
       this.dispatchEvent(e);
       let name;
       let inMem;
-      if (e.detaultPrevented) {
+      if (e.defaultPrevented) {
         name = e.detail.environment;
         inMem = e.detail.inMemVariables;
       } else {
@@ -192,20 +187,39 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
   /**
    * Handler for the `environment` property change.
    *
+   * Fires a `selected-environment-changed` with a debouncer set to next render
+   * frame.
+   */
+  _environmentChanged() {
+    if (this._envChangeDebouncer) {
+      return;
+    }
+    this._envChangeDebouncer = true;
+    Polymer.RenderStatus.afterNextRender(this, () => {
+      this._envChangeDebouncer = false;
+      this.__environmentChanged(this.environment);
+    });
+  }
+  /**
+   * Handler for the `environment` property change.
+   *
    * Fires a `selected-environment-changed` custom event and updates list of variables
    * in the environment.
    *
    * @param {String} environment
    */
-  _environmentChanged(environment) {
+  __environmentChanged(environment) {
     this.variables = undefined;
-    this.dispatchEvent(new CustomEvent('selected-environment-changed', {
-      composed: true,
-      bubbles: true,
-      detail: {
-        value: environment
-      }
-    }));
+    this._env = undefined;
+    if (!this._cancelEnvPropagation) {
+      this.dispatchEvent(new CustomEvent('selected-environment-changed', {
+        composed: true,
+        bubbles: true,
+        detail: {
+          value: environment
+        }
+      }));
+    }
     if (!environment) {
       return;
     }
@@ -214,8 +228,14 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     .then((obj) => {
       this._env = obj;
       return this._updateVariablesList();
+    })
+    .then(() => {
+      if (!this.initialized) {
+        this._setInitialized(true);
+      }
     });
   }
+
   /**
    * Reads environment object from the data stopre if different than `default`.
    *
@@ -237,12 +257,13 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     this.dispatchEvent(e);
     if (!e.defaultPrevented) {
       if (this._retryingModel) {
-        return Promise.reject(new Error('Variables model not found'));
+        return Promise.reject(
+          new Error('Variables model not found (environment-read)'));
       }
       this._retryingModel = true;
       return new Promise((resolve, reject) => {
         Polymer.RenderStatus.afterNextRender(this, () => {
-          this._readEvnvObjectData(environment)
+          this._readEnvObjectData(environment)
           .then((data) => resolve(data))
           .catch((cause) => reject(cause));
         });
@@ -323,7 +344,8 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     this.dispatchEvent(e);
     if (!e.defaultPrevented) {
       if (this._retryingModel) {
-        return Promise.reject(new Error('Variables model not found'));
+        return Promise.reject(
+          new Error('Variables model not found (environment-list-variables)'));
       }
       this._retryingModel = true;
       return new Promise((resolve, reject) => {
@@ -382,7 +404,9 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     if (e.composedPath()[0] === this) {
       return;
     }
+    this._cancelEnvPropagation = true;
     this.set('environment', e.detail.value);
+    this._cancelEnvPropagation = false;
   }
   /**
    * Handler for the `data-imported` custom event. Refreshes list of environmants
@@ -419,12 +443,13 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     if (e.cancelable) {
       return;
     }
-    if (!this._env || this._env._id !== e.detail.id) {
+    const env = e.detail.value;
+    if (!this._env || this._env._id !== env._id) {
       return;
     }
-    this._env = e.detail.value;
-    if (this.environment !== this._env.name) {
-      this.environment = this._env.name;
+    this._env = env;
+    if (this.environment !== env.name) {
+      this.environment = env.name;
     }
   }
   /**
@@ -441,6 +466,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     if (!this._env || this._env._id !== e.detail.id) {
       return;
     }
+    this._env = undefined;
     this.environment = 'default';
   }
   /**
@@ -475,11 +501,11 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * @param {Event} e
    */
   _varDeleteHandler(e) {
-    if (!e.cancelable || e.defaultPrevented) {
+    if (e.cancelable || e.defaultPrevented) {
       return;
     }
     if (this.variables) {
-      const id = e.detail.value;
+      const id = e.detail.id;
       const index = this.variables.findIndex((item) => item._id === id);
       if (~index) {
         this.splice('variables', index, 1);

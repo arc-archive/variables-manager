@@ -8,49 +8,80 @@
     <script src="helper.js"></script>
     <link rel="import" href="../variables-manager.html">
     <link rel="import" href="../../app-pouchdb/pouchdb.html">
+    <link rel="import" href="../../arc-models/variables-model.html">
   </head>
   <body>
+    <variables-model></variables-model>
 
-    <test-fixture id="basic">
+    <test-fixture id="Basic">
       <template>
         <variables-manager></variables-manager>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="Env">
+      <template>
+        <variables-manager environment="test"></variables-manager>
       </template>
     </test-fixture>
 
     <script>
     /* global VariablesTestHelper */
     suite('environment-deleted', function() {
-      let databaseRecordId;
+      let ids;
       let element;
 
       suiteSetup(function() {
         return VariablesTestHelper.deleteDatabase('variables-environments')
-        .then(() => VariablesTestHelper.addEnvs('test'))
-        .then((result) => databaseRecordId = result.id);
+        .then(() => VariablesTestHelper.addEnvs(['test', 'other']))
+        .then((result) => {
+          ids = result.map((item) => item.id);
+        });
       });
 
-      setup(function(done) {
-        element = fixture('basic');
-        VariablesTestHelper.fire('selected-environment-changed', {
-          value: 'test'
-        });
-        element.addEventListener('variables-list-changed', function clb(e) {
-          if (e.detail.value === undefined || e.detail.environment !== 'test') {
-            return;
-          }
-          element.removeEventListener('variables-list-changed', clb);
+      test('Ignores when default is selected', function(done) {
+        element = fixture('Basic');
+        element.addEventListener('initialized-changed', function clb() {
+          element.removeEventListener('initialized-changed', clb);
+          document.body.dispatchEvent(new CustomEvent('environment-deleted', {
+            bubbles: true,
+            detail: {
+              id: ids[0]
+            }
+          }));
+          assert.isUndefined(element._env);
+          assert.equal(element.environment, 'default');
           done();
         });
       });
 
-      test('The environment-deleted event is cancelled', function(done) {
-        const e = VariablesTestHelper.fire('environment-deleted', {
-          value: databaseRecordId
+      test('Ignores when is not selected', function(done) {
+        element = fixture('Env');
+        element.addEventListener('initialized-changed', function clb() {
+          element.removeEventListener('initialized-changed', clb);
+          document.body.dispatchEvent(new CustomEvent('environment-deleted', {
+            bubbles: true,
+            detail: {
+              id: ids[1]
+            }
+          }));
+          assert.equal(element.environment, 'test');
+          done();
         });
-        // it must be wrapped in event listener or another test will fail
-        // because this would still running.
-        element.addEventListener('environment-deleted', function() {
-          assert.isTrue(e.defaultPrevented);
+      });
+
+      test('Sets default environment', function(done) {
+        element = fixture('Env');
+        element.addEventListener('initialized-changed', function clb() {
+          element.removeEventListener('initialized-changed', clb);
+          document.body.dispatchEvent(new CustomEvent('environment-deleted', {
+            bubbles: true,
+            detail: {
+              id: ids[0]
+            }
+          }));
+          assert.equal(element.environment, 'default');
+          assert.isUndefined(element._env);
           done();
         });
       });
