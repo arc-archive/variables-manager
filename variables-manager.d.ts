@@ -9,6 +9,7 @@
  */
 
 /// <reference path="../polymer/types/polymer-element.d.ts" />
+/// <reference path="../polymer/types/lib/utils/render-status.d.ts" />
 /// <reference path="../events-target-behavior/events-target-behavior.d.ts" />
 
 declare namespace LogicElements {
@@ -23,208 +24,15 @@ declare namespace LogicElements {
    * <variables-manager></variables-manager>
    * ```
    *
-   * This element is designed to work with browser's event system. That means that
-   * each operation can be done by dispatching
-   * [CustomEvent](https://developer.mozilla.org/en/docs/Web/API/CustomEvent).
-   *
-   * **Important** Events that request data update (create/update/delete) must be
-   * cancellable. Otherwise the element will not handle the event at all.
-   *
-   * When the update event is handled it is cancelled so 1) other managers that
-   * exists in the DOM and listens fo the same event will not execute change 2)
-   * after execution the manager dispatches the same event which is not cancellable.
-   * UI element and other relevant parts of the application should handle only the
-   * event that is not cancellable because it contains data **after** the update
-   * has been stored in the datastore.
-   *
-   * ### Example
-   *
-   * ```javascript
-   * // requesting to create an environment
-   * const e = new CustomEvent('environment-updated', {
-   *    bubbles: true,
-   *    composed: true,
-   *    cancelable: true,
-   *    detail: {
-   *      name: 'Test environment'
-   *    }
-   * });
-   * document.dispatchEvent(e);
-   * console.log(e.defaultPrevented); // true
-   * ```
-   *
-   * The event requesting data change is cancelled and propagation of the
-   * event is stopped. The same script should listen for the same event to
-   * check for data update:
-   *
-   * ```javascript
-   *
-   * window.addEventListener('environment-updated', function(e) {
-   *    if (e.cancelable) {
-   *      // This event requesting data change. We shouldn't be interested in this
-   *      // event.
-   *      return;
-   *    }
-   *    const environment = e.detail.value;
-   *    console.log(environment._id, environment._rev);
-   * });
-   * ```
-   *
-   * Updated object will have updated `_rev` property and `_id`. This are
-   * [PouchDb](https://pouchdb.com/api.html) properties to identify data in the
-   * datastore.
-   *
-   * ## Events API
-   *
-   * ### selected-environment-changed
-   *
-   * Changes currently selected environment in the manager. This event doesn't have
-   * to be cancelable. The change trigges request to read variables for new
-   * environment so `variables-list-changed` event is expected to be fired.
-   *
-   * #### Properties
-   *
-   * `value` (`string`) - Selected environment name
-   *
-   * ### environment-updated
-   *
-   * Updates or creates new environment. This event have to be cancelable.
-   * If the `value` property contains `_id` then the object will be updated.
-   *
-   * #### Properties
-   *
-   * `value` (`object`) - Environment datastore object.
-   *
-   * ### environment-deleted
-   *
-   * Deletes an environment. This event have to be cancelable.
-   *
-   * #### Properties
-   * `value` (`string`) - The `_id` property of the environment object.
-   *
-   * ### environment-current
-   *
-   * Request for current environment information. This event have to be cancelable.
-   * The manager will set a `value` property on the details object so the event
-   * source should read it after the event is dispatched.
-   *
-   * Note: you have to set a detail object or otherwise it won't be created after
-   * the event is dispatched.
-   *
-   * ```javascript
-   * const e = new CustomEvent('environment-current', {
-   *    bubbles: true,
-   *    composed: true,
-   *    cancelable: true,
-   *    detail: {}
-   * });
-   * document.dispatchEvent(e);
-   * if (e.defaultPrevented) {
-   *    console.log(e.detail.value); // Current environment
-   * }
-   * ```
-   *
-   * ### environment-list
-   *
-   * Request for current environments list information. This event have to be
-   * cancelable. The manager will set a `value` property on the details object so
-   * the event source should read it after the event is dispatched.
-   *
-   * Note: you have to set a detail object or otherwise it won't be created after
-   * the event is dispatched.
-   *
-   * Note: The value contains a list of user created environments (without
-   * the `default` environment). Therefore it can be `undefined` or empty array.
-   *
-   * ```javascript
-   * const e = new CustomEvent('environment-list', {
-   *    bubbles: true,
-   *    composed: true,
-   *    cancelable: true,
-   *    detail: {}
-   * });
-   * document.dispatchEvent(e);
-   * if (e.defaultPrevented) {
-   *    console.log(e.detail.value); // All available environments.
-   * }
-   * ```
-   *
-   * ### variable-updated
-   *
-   * Updates or creates new variable. This event have to be cancelable.
-   * If the `value` property contains `_id` then the object will be updated.
-   *
-   * #### Properties
-   *
-   * `value` (`object`) - Variable datastore object.
-   *
-   * The object must contain `variable` (variable name), `value` (it's body) and
-   * `environment` properties. Otherwise an error will be throw.
-   *
-   * ### variable-deleted
-   *
-   * Deletes an environment. This event have to be cancelable.
-   *
-   * #### Properties
-   *
-   * `value` (`string`) - The `_id` property of the variable object.
-   *
-   * ### variable-list
-   *
-   * Request for current variables list information. This event have to be
-   * cancelable. The manager will set a `value` property on the details object so
-   * the event source should read it after the event is dispatched.
-   *
-   * Note: you have to set a detail object or otherwise it won't be created after
-   * the event is dispatched.
-   *
-   * Note: The value contains a list of user created variables. Therefore it can be
-   * `undefined` or empty array.
-   *
-   * Note: Additional `environment` property is set to the `detail` object to indicate
-   * to which environment the variables belongs.
-   *
-   * ```javascript
-   * const e = new CustomEvent('variable-list', {
-   *    bubbles: true,
-   *    composed: true,
-   *    cancelable: true,
-   *    detail: {}
-   * });
-   * document.dispatchEvent(e);
-   * if (e.defaultPrevented) {
-   *    console.log(e.detail.value); // All available variables.
-   *    console.log(e.detail.environment); // Environment name.
-   * }
-   * ```
-   *
    * ## New in version 2
    *
    * - PouchDB is optional dependency. Add your own version of PouchDB to use the
    * component.
-   * - `environment-updated`, `environment-deleted`, `variable-updated`, and
-   * `variable-deleted` events always set `result` on the detail object with the
-   * promise. It does not set `error` property anymore.
+   * - Update/Delete actions has been moved to `arc-models/variables-model`
    */
   class VariablesManager extends
     ArcBehaviors.EventsTargetBehavior(
     Polymer.Element) {
-
-    /**
-     * Returns a list of system variables.
-     * This returns a value only if the element is executed in node environment.
-     */
-    readonly systemVariables: any[]|null;
-
-    /**
-     * Handler to the environments database.
-     */
-    readonly _envDb: object|null;
-
-    /**
-     * Handler to the variables database.
-     */
-    readonly _varDb: object|null;
 
     /**
      * Currently loaded environment.
@@ -232,9 +40,10 @@ declare namespace LogicElements {
     environment: string|null|undefined;
 
     /**
-     * List of available environments (except for "default").
+     * Selected environment object from the data store if different than
+     * "default".
      */
-    environments: any[]|null|undefined;
+    _env: object|null|undefined;
 
     /**
      * List of variables associated with current `environment`.
@@ -246,36 +55,51 @@ declare namespace LogicElements {
      * (system or app) and exists only in memory.
      */
     inMemVariables: any[]|null|undefined;
+
+    /**
+     * When set it includes system variables into the list of variables.
+     * This should be a map of system variables.
+     */
+    systemVariables: object|null;
+    readonly _sysVars: any[]|null|undefined;
+
+    /**
+     * A flag to determine of the component is fully initialized.
+     */
+    readonly initialized: boolean|null|undefined;
     connectedCallback(): void;
     _attachListeners(node: any): void;
     _detachListeners(node: any): void;
+    _computeSysVars(systemVariables: any): any;
+
+    /**
+     * Initializes the element.
+     */
+    _initialize(): void;
+
+    /**
+     * Handler for `environment-current` dispatched by managers to ask
+     * for current environment.
+     */
+    _envNameHandler(e: CustomEvent|null): void;
 
     /**
      * Handler for the `environment` property change.
      *
-     * Fires a `selected-environment-changed` custom event and updates list of variables
-     * in the environment.
+     * Fires a `selected-environment-changed` with a debouncer set to next render
+     * frame.
      */
-    _environmentChanged(environment: String|null): void;
+    _environmentChanged(): void;
 
     /**
-     * Handler for the `environments` property change.
+     * Reads environment object from the data stopre if different than `default`.
      *
-     * Fires a `environments-list-changed` custom event.
-     *
-     * @param record Polymer's change record
+     * @param environment Environment value.
      */
-    _environmentsChanged(record: object|null): void;
+    _readEnvObjectData(environment: String|null): Promise<any>|null;
 
     /**
-     * Handler for the `variables` property change.
-     * Fires a `variables-list-changed` custom event.
-     */
-    _variablesChanged(): void;
-    _inMemVariablesChanged(record: any): void;
-
-    /**
-     * Lists app, sys and in mem variables in single array.
+     * Lists app, sys and in mem variables into single array.
      *
      * @returns List of all variables.
      */
@@ -288,35 +112,14 @@ declare namespace LogicElements {
     _notifyVarsListChanged(): void;
 
     /**
-     * Get's a list of environments and updates the `environments` property.
-     *
-     * This task is asynchronus.
-     */
-    _updateEnvironmentsList(): Promise<any>|null;
-
-    /**
      * Updates the list of variables for current environment.
      *
      * This task is asynchronus.
-     */
-    _updateVariablesList(): void;
-
-    /**
-     * Lists all user defined environments.
      *
-     * @returns Resolved promise with the list of environments.
-     */
-    listEnvironments(): Promise<any>|null;
-
-    /**
-     * Refreshes list of variables for the `environment`.
-     *
-     * @param environment Name of the environment to get the variables
-     * from. If not set then `default` fill be used.
      * @returns Resolved promise with the list of variables for the
      * environment.
      */
-    listVariables(environment: String|null): Promise<any>|null;
+    _updateVariablesList(): Promise<any>|null;
 
     /**
      * Handles exceptions when occur by logging them to the console and
@@ -352,173 +155,46 @@ declare namespace LogicElements {
 
     /**
      * A handler for the `environment-deleted` custom event.
-     * Deletes a variable in the data store.
-     *
-     * The `environment-deleted` custom event should be cancellable or the event
-     * won't be handled at all.
-     *
-     * The delete function fires non cancellable `environment-deleted` custom
-     * event so the UI components can use it to update their values.
+     * If deleted environment is current environment then it sets environment
+     * to `default`.
      */
     _envDeleteHandler(e: CustomEvent|null): void;
 
     /**
-     * A handler for the `environment-current` custom event.
-     * Adds a `value` propety of the event `detail` object with the name of the
-     * environment.
-     *
-     * The `environment-current` custom event should be cancellable or the event
-     * won't be handled at all.
-     */
-    _envGetCurrentHandler(e: CustomEvent|null): void;
-
-    /**
-     * A handler for the `environment-list` custom event.
-     * Adds a `value` propety of the event `detail` object with the array of the
-     * user defined environments objects. Each item is a PouchDb data store item
-     * (with `_id` and `_rev`).
-     *
-     * The `value` set on the details object can be undefined if the user haven't
-     * defined any environments or if the manager haven't restored the list yet.
-     * In the later case the event target element should listen for
-     * `environments-list-changed` event to update the list of available environments.
-     *
-     * The `environment-current` custom event should be cancellable or the event
-     * won't be handled at all.
-     */
-    _envListHandler(e: CustomEvent|null): void;
-
-    /**
-     * Updates an environment value.
-     *
-     * If the `value` doesn't contains the `_id` property a new environment will
-     * be created. The `_rev` property will be always updated to the latest value.
-     *
-     * After finish this method sends the `environment-updated` event that can't
-     * be cancelled so other managers that are present in the DOM will not update
-     * the value.
-     *
-     * @param data A PouchDB object to be stored. It should contain the
-     * `_id` property if the object is about to be updated. If the `_id` doesn't
-     * exists a new object is created.
-     */
-    updateEnvironment(data: object|null): Promise<any>|null;
-
-    /**
-     * Deletes an environment from the data store.
-     *
-     * After updating the data store this method sends the `environment-deleted`
-     * event that can't be cancelled so other managers that are present in the DOM
-     * will not update the value again. If you don't need updated `_rev` you don't
-     * have to listen for this event.
-     *
-     * Because this function changes the `environments` array the
-     * `environments-list-changed` event is fired alongside the `environment-deleted`
-     * event.
-     *
-     * @param id The PouchDB `_id` property of the object to delete.
-     */
-    deleteEnvironment(id: object|null): Promise<any>|null;
-
-    /**
-     * To be called after the environment has been deleted. It clears variables
-     * for the environment and if the environment is currently loaded environment
-     * then it clear cuerrent data.
-     *
-     * @param environment The environment name.
-     */
-    _afterDeleteEnvironment(environment: String|null): Promise<any>|null;
-
-    /**
      * A handler for the `variable-updated` custom event.
-     * Updates the variable in the data store.
-     *
-     * The `variable-updated` custom event should be cancellable or the event
-     * won't be handled at all.
+     * Updates the variable in the variables list if the environment name match.
      */
     _varUpdateHandler(e: CustomEvent|null): void;
 
     /**
-     * Deletes a variable from the data store.
-     *
-     * If the `value` doesn't contains the `_id` property a new environment will
-     * be created. The `_rev` property will be always updated to the latest value.
-     *
-     * After finish this method sends the `environment-deleted` event that can't
-     * be cancelled so other managers that are present in the DOM will not update
-     * the value. If you don't need database record updated `_rev` you don't
-     * have to listen for this event.
-     *
-     * Because this function changes the `environments` array the
-     * `environments-list-changed` event is fired alongside the `environment-deleted`
-     * event.
-     *
-     * @param e Optional. If it is called from the event handler, this
-     * is the event object. If initial validation fails then it will set `error`
-     * property on the `detail` object.
+     * Removes the valiable from the lsit of variables if the variable is
+     * in the list.
      */
     _varDeleteHandler(e: Event|null): void;
 
     /**
-     * A handler for the `variable-list` custom event.
-     *
-     * Adds a `value` propety of the event `detail` object with the array of the
-     * variables restored for current environment. Each item is a PouchDb data
-     * store item (with `_id` and `_rev`).
-     *
-     * The `value` set on the details object can be undefined if the this of
-     * variables haven't been read yet or if the yser haven't defined any
-     * variable for this environment.
-     * In the first case the event target element should listen for
-     * `variables-list-changed` event to update the list of available variables for
-     * current environment.
-     *
-     * Additionally it sets the `environment` property on the `detail` object
-     * with the name of current environment.
-     *
-     * List of properties added to the detail object is consistent with the
-     * `variables-list-changed` event fired by this event.
-     *
-     * The `variable-list` custom event should be cancellable or the event
-     * won't be handled at all. It's to prohibit handling the event by many
-     * managers (if more than one is in the DOM).
+     * A handler for `variable-store-action` dispatched by request actions logic.
+     * Creates / updates a variable with new data.
      */
-    _varListHandler(e: CustomEvent|null): void;
+    _varStoreActionHandler(e: CustomEvent|null): Promise<any>|null;
 
     /**
-     * Updates a variable value.
-     *
-     * If the `value` doesn't contains the `_id` property a new variable will
-     * be created. The `_rev` property will be always updated to the latest value
-     * so there's no need to set it on the object.
-     *
-     * After saving the data this method sends the `variable-updated` event that
-     * can't be cancelled so other managers that are present in the DOM will not
-     * update the value again.
-     *
-     * @param data A PouchDB object to be stored. It should contain the
-     * `_id` property if the object is about to be updated. If the `_id` doesn't
-     * exists a new object is created.
+     * @param name Variable name
+     * @returns Index of the variable in the variables list or -1.
      */
-    updateVariable(data: object|null): Promise<any>|null;
+    _variableIndexByName(name: String|null): Number|null;
 
     /**
-     * Deletes a variable from the data store.
+     * Dispatches variable updated custom event to the model.
      *
-     * After updating the data store this method sends the `variable-deleted`
-     * event that can't be cancelled so other managers that are present in the DOM
-     * will not update the value again. If you don't need updated `_rev` you don't
-     * have to listen for this event.
-     *
-     * Because this function changes the `variables` array the
-     * `variables-list-changed` event is fired alongside the `variable-deleted`
-     * event.
-     *
-     * @param id The PouchDB `_id` property of the object to delete.
+     * @param value Variable to update
      */
-    deleteVariable(id: object|null): Promise<any>|null;
-    _varStoreActionHandler(e: any): any;
-    _varUpdateActionHandler(e: any): void;
+    _updateVariable(value: object|null): Promise<any>|null;
+
+    /**
+     * In memory variable change - without storing it to the store.
+     */
+    _varUpdateActionHandler(e: CustomEvent|null): void;
   }
 }
 
