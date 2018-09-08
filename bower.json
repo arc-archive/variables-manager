@@ -39,7 +39,8 @@
     "arc-models": "advanced-rest-client/arc-models#2.0.0-preview",
     "paper-toast": "PolymerElements/paper-toast#^2.0.0",
     "arc-icons": "advanced-rest-client/arc-icons#^2.0.0",
-    "paper-dialog": "PolymerElements/paper-dialog#^2.0.0"
+    "paper-dialog": "PolymerElements/paper-dialog#^2.0.0",
+    "variables-consumer-mixin": "advanced-rest-client/variables-consumer-mixin#2.0.0-preview"
   },
   "ignore": [
     "**/.*",
