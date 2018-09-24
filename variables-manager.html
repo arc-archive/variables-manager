@@ -70,17 +70,23 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
       systemVariables: Object,
       _sysVars: {
         type: Array,
-        computed: '_computeSysVars(systemVariables)'
+        computed: '_computeSysVars(systemVariables, sysVarsDisabled)',
+        observer: '_sysVarsChanged'
       },
       /**
        * A flag to determine of the component is fully initialized.
        */
-      initialized: {type: Boolean, readOnly: true, notify: true}
+      initialized: {type: Boolean, readOnly: true, notify: true},
+      /**
+       * When set the `_sysVars` will not be computed and therefore included
+       * into variables list.
+       */
+      sysVarsDisabled: Boolean
     };
   }
 
-  _computeSysVars(systemVariables) {
-    if (!systemVariables) {
+  _computeSysVars(systemVariables, sysVarsDisabled) {
+    if (!systemVariables || sysVarsDisabled) {
       return;
     }
     let names;
@@ -599,6 +605,13 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
       this.set(`inMemVariables.${index}.value`, e.detail.value);
     }
     this._notifyVarsListChanged();
+  }
+
+  _sysVarsChanged() {
+    if (!this.initialized) {
+      return;
+    }
+    Polymer.RenderStatus.afterNextRender(this, () => this._notifyVarsListChanged());
   }
 
   /**
