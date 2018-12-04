@@ -38,7 +38,9 @@ the License.
  * @appliesMixin ArcBehaviors.EventsTargetBehavior
  */
 class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element) {
-  static get is() {return 'variables-manager';}
+  static get is() {
+    return 'variables-manager';
+  }
   static get properties() {
     return {
       /**
@@ -53,10 +55,15 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
        * "default".
        */
       _env: Object,
+      _vars: Array,
       /**
        * List of variables associated with current `environment`.
        */
-      variables: Array,
+      variables: {
+        type: Array,
+        computed: '_computeAppVars(_vars.*, appVariablesDisabled)',
+        observer: '_appVarsChanged'
+      },
       /**
        * List of variables that overrides all existing variables
        * (system or app) and exists only in memory.
@@ -70,7 +77,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
       systemVariables: Object,
       _sysVars: {
         type: Array,
-        computed: '_computeSysVars(systemVariables, sysVarsDisabled)',
+        computed: '_computeSysVars(systemVariables, sysVariablesDisabled)',
         observer: '_sysVarsChanged'
       },
       /**
@@ -81,12 +88,16 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
        * When set the `_sysVars` will not be computed and therefore included
        * into variables list.
        */
-      sysVarsDisabled: Boolean
+      sysVariablesDisabled: Boolean,
+      /**
+       * When set the application (local) defined variables are not included.
+       */
+      appVariablesDisabled: Boolean
     };
   }
 
-  _computeSysVars(systemVariables, sysVarsDisabled) {
-    if (!systemVariables || sysVarsDisabled) {
+  _computeSysVars(systemVariables, sysVariablesDisabled) {
+    if (!systemVariables || sysVariablesDisabled) {
       return;
     }
     let names;
@@ -215,7 +226,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * @param {String} environment
    */
   __environmentChanged(environment) {
-    this.variables = undefined;
+    this._vars = undefined;
     this._env = undefined;
     if (!this._cancelEnvPropagation) {
       this.dispatchEvent(new CustomEvent('selected-environment-changed', {
@@ -290,7 +301,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
 
     let result = [];
     const names = [];
-    if (variables && variables.length) {
+    if (!this.appVariablesDisabled && variables && variables.length) {
       variables.forEach((item) => {
         names.push(item.variable);
         result.push(Object.assign({}, item));
@@ -373,11 +384,11 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
         return;
       }
       variables = variables || [];
-      this.set('variables', variables);
+      this.set('_vars', variables);
     })
     .catch((cause) => {
       this._handleException(cause);
-      this.set('variables', []);
+      this.set('_vars', []);
     })
     .then(() => this._notifyVarsListChanged());
   }
@@ -488,16 +499,16 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     if (variable.environment !== this.environment) {
       return;
     }
-    const vars = this.variables;
+    const vars = this._vars;
     if (!vars) {
-      this.set('variables', [variable]);
+      this.set('_vars', [variable]);
       return;
     }
     const index = vars.findIndex((item) => item._id === variable._id);
     if (~index) {
-      this.set(['variables', index], variable);
+      this.set(['_vars', index], variable);
     } else {
-      this.push('variables', variable);
+      this.push('_vars', variable);
     }
   }
   /**
@@ -510,11 +521,11 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     if (e.cancelable || e.defaultPrevented) {
       return;
     }
-    if (this.variables) {
+    if (this._vars) {
       const id = e.detail.id;
-      const index = this.variables.findIndex((item) => item._id === id);
+      const index = this._vars.findIndex((item) => item._id === id);
       if (~index) {
-        this.splice('variables', index, 1);
+        this.splice('_vars', index, 1);
       }
     }
   }
@@ -541,7 +552,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
        environment: this.environment
      };
     } else {
-      obj = this.variables[index];
+      obj = this._vars[index];
       obj.value = e.detail.value;
     }
     const p = this._updateVariable(obj);
@@ -553,10 +564,10 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * @return {Number} Index of the variable in the variables list or -1.
    */
   _variableIndexByName(name) {
-    if (!this.variables) {
+    if (!this._vars) {
       return -1;
     }
-    return this.variables.findIndex((item) => item.variable === name);
+    return this._vars.findIndex((item) => item.variable === name);
   }
   /**
    * Dispatches variable updated custom event to the model.
@@ -614,6 +625,19 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     Polymer.RenderStatus.afterNextRender(this, () => this._notifyVarsListChanged());
   }
 
+  _computeAppVars(record, appVariablesDisabled) {
+    if (appVariablesDisabled) {
+      return;
+    }
+    return record.base;
+  }
+
+  _appVarsChanged() {
+    if (!this.initialized) {
+      return;
+    }
+    Polymer.RenderStatus.afterNextRender(this, () => this._notifyVarsListChanged());
+  }
   /**
    * Fired when selected environment has changed.
    * This event is not fired if the change has been causes by the
