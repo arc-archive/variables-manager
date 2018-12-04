@@ -131,6 +131,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     this._varStoreActionHandler = this._varStoreActionHandler.bind(this);
     this._varUpdateActionHandler = this._varUpdateActionHandler.bind(this);
     this._envNameHandler = this._envNameHandler.bind(this);
+    this._onDatabaseDestroy = this._onDatabaseDestroy.bind(this);
   }
 
   connectedCallback() {
@@ -148,6 +149,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     node.addEventListener('data-imported', this._dataImportHandler);
     node.addEventListener('variable-store-action', this._varStoreActionHandler);
     node.addEventListener('variable-update-action', this._varUpdateActionHandler);
+    node.addEventListener('datastore-destroyed', this._onDatabaseDestroy);
   }
 
   _detachListeners(node) {
@@ -160,6 +162,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     node.removeEventListener('data-imported', this._dataImportHandler);
     node.removeEventListener('variable-store-action', this._varStoreActionHandler);
     node.removeEventListener('variable-update-action', this._varUpdateActionHandler);
+    node.removeEventListener('datastore-destroyed', this._onDatabaseDestroy);
   }
   /**
    * Initializes the element.
@@ -430,7 +433,31 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * and variables.
    */
   _dataImportHandler() {
-    this._updateVariablesList();
+    Polymer.RenderStatus.afterNextRender(this, () => this._updateVariablesList());
+  }
+
+  /**
+   * Handler for the `datastore-destroyed` custom event.
+   * @param {CustomEvent} e
+   */
+  _onDatabaseDestroy(e) {
+    let datastore = e.detail.datastore;
+    if (!datastore || !datastore.length) {
+      return;
+    }
+    if (typeof datastore === 'string') {
+      datastore = [datastore];
+    }
+    if (datastore.indexOf('variables') === -1 &&
+      datastore.indexOf('variables-environments') === -1 &&
+      datastore[0] !== 'all') {
+      return;
+    }
+    if (this.environment !== 'default') {
+      this.environment = 'default';
+    } else {
+      Polymer.RenderStatus.afterNextRender(this, () => this._updateVariablesList());
+    }
   }
 
   _eventCancelled(e) {
