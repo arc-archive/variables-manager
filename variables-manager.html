@@ -96,30 +96,6 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     };
   }
 
-  _computeSysVars(systemVariables, sysVariablesDisabled) {
-    if (!systemVariables || sysVariablesDisabled) {
-      return;
-    }
-    let names;
-    try {
-      names = Object.keys(systemVariables);
-    } catch (e) {
-      console.warn('System variables is not a map');
-      return;
-    }
-    const value = names.map(function(env) {
-      const obj = {
-        variable: env,
-        value: systemVariables[env],
-        enabled: true,
-        environment: '*',
-        sysVar: true
-      };
-      return obj;
-    });
-    return value;
-  }
-
   constructor() {
     super();
     this._envChnageHandler = this._envChnageHandler.bind(this);
@@ -191,6 +167,32 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     }
   }
   /**
+   * Computes list of variables object for system variables
+   * @param {Object} systemVariables Key - value pairs of system variables
+   * @param {Boolean} sysVariablesDisabled If true it always returns `false`.
+   * @return {Array<Object>|undefined} List of variables representing system variables.
+   */
+  _computeSysVars(systemVariables, sysVariablesDisabled) {
+    if (!systemVariables || sysVariablesDisabled) {
+      return;
+    }
+    if (typeof systemVariables !== 'object') {
+      console.warn('System variables is not an object');
+      return;
+    }
+    const names = Object.keys(systemVariables);
+    const value = names.map(function(env) {
+      return {
+        variable: env,
+        value: systemVariables[env],
+        enabled: true,
+        environment: '*',
+        sysVar: true
+      };
+    });
+    return value;
+  }
+  /**
    * Handler for `environment-current` dispatched by managers to ask
    * for current environment.
    * @param {CustomEvent} e
@@ -227,6 +229,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * in the environment.
    *
    * @param {String} environment
+   * @return {Promise}
    */
   __environmentChanged(environment) {
     this._vars = undefined;
@@ -241,9 +244,9 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
       }));
     }
     if (!environment) {
-      return;
+      return Promise.resolve();
     }
-    this._readEnvObjectData(environment)
+    return this._readEnvObjectData(environment)
     .catch((cause) => this._handleException(cause))
     .then((obj) => {
       this._env = obj;
@@ -441,7 +444,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * @param {CustomEvent} e
    */
   _onDatabaseDestroy(e) {
-    let datastore = e.detail.datastore;
+    let {datastore} = e.detail;
     if (!datastore || !datastore.length) {
       return;
     }
@@ -567,20 +570,20 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
       return;
     }
     e.preventDefault();
-    const name = e.detail.variable;
-    const index = this._variableIndexByName(name);
+    const {variable, value} = e.detail;
+    const index = this._variableIndexByName(variable);
     let obj;
     if (index === -1) {
       obj = {
-       variable: e.detail.variable,
-       value: e.detail.value,
+       variable,
+       value,
        enabled: true,
        sysVar: false,
        environment: this.environment
      };
     } else {
       obj = this._vars[index];
-      obj.value = e.detail.value;
+      obj.value = value;
     }
     const p = this._updateVariable(obj);
     e.detail.result = p;
@@ -627,20 +630,20 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     if (!this.inMemVariables) {
       this.inMemVariables = [];
     }
-    const name = e.detail.variable;
-    const index = this.inMemVariables.findIndex((item) => item.variable === name);
+    const {variable, value} = e.detail;
+    const index = this.inMemVariables.findIndex((item) => item.variable === variable);
     let obj;
     if (index === -1) {
       obj = {
-       variable: e.detail.variable,
-       value: e.detail.value,
-       enabled: true,
-       sysVar: false,
-       environment: '*'
-     };
-     this.push('inMemVariables', obj);
+        variable,
+        value,
+        enabled: true,
+        sysVar: false,
+        environment: '*'
+      };
+      this.push('inMemVariables', obj);
     } else {
-      this.set(`inMemVariables.${index}.value`, e.detail.value);
+      this.set(`inMemVariables.${index}.value`, value);
     }
     this._notifyVarsListChanged();
   }
