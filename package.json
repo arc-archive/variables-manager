@@ -1,6 +1,6 @@
 {
   "name": "@arc-components/variables-manager",
-  "version": "2.0.0-preview",
+  "version": "2.0.0",
   "license": "Apache-2.0",
   "description": "A manager for environments and variables. Non UI element that manages variables state and handle storage",
   "devDependencies": {
