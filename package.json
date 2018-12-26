@@ -4,7 +4,7 @@
   "license": "Apache-2.0",
   "description": "A manager for environments and variables. Non UI element that manages variables state and handle storage",
   "devDependencies": {
-    "@polymer/gen-typescript-declarations": "^1.1.1"
+    "@polymer/gen-typescript-declarations": "^1.6.0"
   },
   "private": false,
   "main": "variables-manager.html",

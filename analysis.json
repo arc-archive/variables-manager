@@ -60,11 +60,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 46,
+              "line": 48,
               "column": 6
             },
             "end": {
-              "line": 49,
+              "line": 51,
               "column": 7
             }
           },
@@ -82,11 +82,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 54,
+              "line": 56,
               "column": 6
             },
             "end": {
-              "line": 54,
+              "line": 56,
               "column": 18
             }
           },
@@ -97,22 +97,45 @@
           }
         },
         {
+          "name": "_vars",
+          "type": "Array | null | undefined",
+          "description": "",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 57,
+              "column": 6
+            },
+            "end": {
+              "line": 57,
+              "column": 18
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "attributeType": "Array"
+            }
+          }
+        },
+        {
           "name": "variables",
           "type": "Array | null | undefined",
           "description": "List of variables associated with current `environment`.",
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 58,
+              "line": 61,
               "column": 6
             },
             "end": {
-              "line": 58,
-              "column": 22
+              "line": 65,
+              "column": 7
             }
           },
           "metadata": {
             "polymer": {
+              "observer": "\"_appVarsChanged\"",
+              "readOnly": true,
               "attributeType": "Array"
             }
           }
@@ -124,11 +147,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 63,
+              "line": 70,
               "column": 6
             },
             "end": {
-              "line": 63,
+              "line": 70,
               "column": 27
             }
           },
@@ -145,11 +168,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 69,
+              "line": 76,
               "column": 6
             },
             "end": {
-              "line": 69,
+              "line": 76,
               "column": 29
             }
           },
@@ -166,16 +189,17 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 70,
+              "line": 77,
               "column": 6
             },
             "end": {
-              "line": 73,
+              "line": 81,
               "column": 7
             }
           },
           "metadata": {
             "polymer": {
+              "observer": "\"_sysVarsChanged\"",
               "readOnly": true,
               "attributeType": "Array"
             }
@@ -188,11 +212,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 77,
+              "line": 85,
               "column": 6
             },
             "end": {
-              "line": 77,
+              "line": 85,
               "column": 64
             }
           },
@@ -200,6 +224,48 @@
             "polymer": {
               "notify": true,
               "readOnly": true,
+              "attributeType": "Boolean"
+            }
+          }
+        },
+        {
+          "name": "sysVariablesDisabled",
+          "type": "boolean | null | undefined",
+          "description": "When set the `_sysVars` will not be computed and therefore included\ninto variables list.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 90,
+              "column": 6
+            },
+            "end": {
+              "line": 90,
+              "column": 35
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "attributeType": "Boolean"
+            }
+          }
+        },
+        {
+          "name": "appVariablesDisabled",
+          "type": "boolean | null | undefined",
+          "description": "When set the application (local) defined variables are not included.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 94,
+              "column": 6
+            },
+            "end": {
+              "line": 94,
+              "column": 35
+            }
+          },
+          "metadata": {
+            "polymer": {
               "attributeType": "Boolean"
             }
           }
@@ -212,11 +278,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 118,
+              "line": 112,
               "column": 2
             },
             "end": {
-              "line": 121,
+              "line": 115,
               "column": 3
             }
           },
@@ -282,11 +348,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 123,
+              "line": 117,
               "column": 2
             },
             "end": {
-              "line": 133,
+              "line": 128,
               "column": 3
             }
           },
@@ -306,11 +372,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 135,
+              "line": 130,
               "column": 2
             },
             "end": {
-              "line": 145,
+              "line": 141,
               "column": 3
             }
           },
@@ -325,37 +391,16 @@
           }
         },
         {
-          "name": "_computeSysVars",
-          "description": "",
-          "privacy": "protected",
-          "sourceRange": {
-            "start": {
-              "line": 81,
-              "column": 2
-            },
-            "end": {
-              "line": 103,
-              "column": 3
-            }
-          },
-          "metadata": {},
-          "params": [
-            {
-              "name": "systemVariables"
-            }
-          ]
-        },
-        {
           "name": "_initialize",
           "description": "Initializes the element.",
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 149,
+              "line": 145,
               "column": 2
             },
             "end": {
-              "line": 171,
+              "line": 167,
               "column": 3
             }
           },
@@ -366,16 +411,48 @@
           }
         },
         {
+          "name": "_computeSysVars",
+          "description": "Computes list of variables object for system variables",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 174,
+              "column": 2
+            },
+            "end": {
+              "line": 193,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "systemVariables",
+              "type": "Object",
+              "description": "Key - value pairs of system variables"
+            },
+            {
+              "name": "sysVariablesDisabled",
+              "type": "Boolean",
+              "description": "If true it always returns `false`."
+            }
+          ],
+          "return": {
+            "type": "(Array.<Object> | undefined)",
+            "desc": "List of variables representing system variables."
+          }
+        },
+        {
           "name": "_envNameHandler",
           "description": "Handler for `environment-current` dispatched by managers to ask\nfor current environment.",
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 177,
+              "line": 199,
               "column": 2
             },
             "end": {
-              "line": 185,
+              "line": 207,
               "column": 3
             }
           },
@@ -396,11 +473,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 192,
+              "line": 214,
               "column": 2
             },
             "end": {
-              "line": 201,
+              "line": 223,
               "column": 3
             }
           },
@@ -416,11 +493,11 @@
           "privacy": "private",
           "sourceRange": {
             "start": {
-              "line": 210,
+              "line": 233,
               "column": 2
             },
             "end": {
-              "line": 236,
+              "line": 259,
               "column": 3
             }
           },
@@ -432,7 +509,7 @@
             }
           ],
           "return": {
-            "type": "void"
+            "type": "Promise"
           }
         },
         {
@@ -441,11 +518,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 244,
+              "line": 267,
               "column": 2
             },
             "end": {
-              "line": 273,
+              "line": 296,
               "column": 3
             }
           },
@@ -467,11 +544,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 279,
+              "line": 302,
               "column": 2
             },
             "end": {
-              "line": 311,
+              "line": 334,
               "column": 3
             }
           },
@@ -488,11 +565,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 316,
+              "line": 339,
               "column": 2
             },
             "end": {
-              "line": 325,
+              "line": 348,
               "column": 3
             }
           },
@@ -508,11 +585,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 333,
+              "line": 356,
               "column": 2
             },
             "end": {
-              "line": 376,
+              "line": 399,
               "column": 3
             }
           },
@@ -529,11 +606,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 383,
+              "line": 406,
               "column": 2
             },
             "end": {
-              "line": 394,
+              "line": 417,
               "column": 3
             }
           },
@@ -555,11 +632,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 402,
+              "line": 425,
               "column": 2
             },
             "end": {
-              "line": 409,
+              "line": 432,
               "column": 3
             }
           },
@@ -580,11 +657,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 414,
+              "line": 437,
               "column": 2
             },
             "end": {
-              "line": 416,
+              "line": 439,
               "column": 3
             }
           },
@@ -595,16 +672,41 @@
           }
         },
         {
+          "name": "_onDatabaseDestroy",
+          "description": "Handler for the `datastore-destroyed` custom event.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 445,
+              "column": 2
+            },
+            "end": {
+              "line": 463,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e",
+              "type": "CustomEvent"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
           "name": "_eventCancelled",
           "description": "",
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 418,
+              "line": 465,
               "column": 2
             },
             "end": {
-              "line": 426,
+              "line": 473,
               "column": 3
             }
           },
@@ -621,11 +723,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 428,
+              "line": 475,
               "column": 2
             },
             "end": {
-              "line": 431,
+              "line": 478,
               "column": 3
             }
           },
@@ -645,11 +747,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 441,
+              "line": 488,
               "column": 2
             },
             "end": {
-              "line": 453,
+              "line": 500,
               "column": 3
             }
           },
@@ -670,11 +772,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 461,
+              "line": 508,
               "column": 2
             },
             "end": {
-              "line": 470,
+              "line": 517,
               "column": 3
             }
           },
@@ -695,11 +797,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 476,
+              "line": 523,
               "column": 2
             },
             "end": {
-              "line": 495,
+              "line": 542,
               "column": 3
             }
           },
@@ -720,11 +822,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 502,
+              "line": 549,
               "column": 2
             },
             "end": {
-              "line": 513,
+              "line": 560,
               "column": 3
             }
           },
@@ -745,11 +847,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 520,
+              "line": 567,
               "column": 2
             },
             "end": {
-              "line": 543,
+              "line": 590,
               "column": 3
             }
           },
@@ -770,11 +872,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 548,
+              "line": 595,
               "column": 2
             },
             "end": {
-              "line": 553,
+              "line": 600,
               "column": 3
             }
           },
@@ -797,11 +899,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 559,
+              "line": 606,
               "column": 2
             },
             "end": {
-              "line": 573,
+              "line": 620,
               "column": 3
             }
           },
@@ -823,11 +925,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 578,
+              "line": 625,
               "column": 2
             },
             "end": {
-              "line": 601,
+              "line": 648,
               "column": 3
             }
           },
@@ -838,6 +940,70 @@
               "type": "CustomEvent"
             }
           ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_sysVarsChanged",
+          "description": "",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 650,
+              "column": 2
+            },
+            "end": {
+              "line": 655,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_computeAppVars",
+          "description": "",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 657,
+              "column": 2
+            },
+            "end": {
+              "line": 662,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "record"
+            },
+            {
+              "name": "appVariablesDisabled"
+            }
+          ]
+        },
+        {
+          "name": "_appVarsChanged",
+          "description": "",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 664,
+              "column": 2
+            },
+            "end": {
+              "line": 669,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
           "return": {
             "type": "void"
           }
@@ -857,7 +1023,7 @@
           "column": 0
         },
         "end": {
-          "line": 629,
+          "line": 696,
           "column": 1
         }
       },
@@ -888,11 +1054,11 @@
           "description": "Currently loaded environment.",
           "sourceRange": {
             "start": {
-              "line": 46,
+              "line": 48,
               "column": 6
             },
             "end": {
-              "line": 49,
+              "line": 51,
               "column": 7
             }
           },
@@ -904,12 +1070,12 @@
           "description": "List of variables associated with current `environment`.",
           "sourceRange": {
             "start": {
-              "line": 58,
+              "line": 61,
               "column": 6
             },
             "end": {
-              "line": 58,
-              "column": 22
+              "line": 65,
+              "column": 7
             }
           },
           "metadata": {},
@@ -920,11 +1086,11 @@
           "description": "List of variables that overrides all existing variables\n(system or app) and exists only in memory.",
           "sourceRange": {
             "start": {
-              "line": 63,
+              "line": 70,
               "column": 6
             },
             "end": {
-              "line": 63,
+              "line": 70,
               "column": 27
             }
           },
@@ -936,11 +1102,11 @@
           "description": "When set it includes system variables into the list of variables.\nThis should be a map of system variables.",
           "sourceRange": {
             "start": {
-              "line": 69,
+              "line": 76,
               "column": 6
             },
             "end": {
-              "line": 69,
+              "line": 76,
               "column": 29
             }
           },
@@ -952,12 +1118,44 @@
           "description": "A flag to determine of the component is fully initialized.",
           "sourceRange": {
             "start": {
-              "line": 77,
+              "line": 85,
               "column": 6
             },
             "end": {
-              "line": 77,
+              "line": 85,
               "column": 64
+            }
+          },
+          "metadata": {},
+          "type": "boolean | null | undefined"
+        },
+        {
+          "name": "sys-variables-disabled",
+          "description": "When set the `_sysVars` will not be computed and therefore included\ninto variables list.",
+          "sourceRange": {
+            "start": {
+              "line": 90,
+              "column": 6
+            },
+            "end": {
+              "line": 90,
+              "column": 35
+            }
+          },
+          "metadata": {},
+          "type": "boolean | null | undefined"
+        },
+        {
+          "name": "app-variables-disabled",
+          "description": "When set the application (local) defined variables are not included.",
+          "sourceRange": {
+            "start": {
+              "line": 94,
+              "column": 6
+            },
+            "end": {
+              "line": 94,
+              "column": 35
             }
           },
           "metadata": {},
