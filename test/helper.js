@@ -1,13 +1,7 @@
-var forceShaddowRoot = location.search === '?dom=shadow';
-var VariablesTestHelper = {
-  suiteName: function(name) {
-    if (forceShaddowRoot) {
-      name += ' - shadow DOM';
-    } else {
-      name += ' - shagy DOM';
-    }
-    return name;
-  },
+/**
+ * Tests helper with common functions.
+ */
+const VariablesTestHelper = {
   /**
    * Fires a custom event
    *
@@ -18,7 +12,7 @@ var VariablesTestHelper = {
    * @return {CustomEvent} Fired event.
    */
   fire: function(type, detail, node) {
-    var event = new CustomEvent(type, {
+    const event = new CustomEvent(type, {
       bubbles: true,
       composed: true,
       cancelable: true,
@@ -35,7 +29,7 @@ var VariablesTestHelper = {
    */
   deleteDatabase: function(name) {
     return new Promise(function(resolve, reject) {
-      var request = window.indexedDB.deleteDatabase('_pouch_' + name);
+      const request = window.indexedDB.deleteDatabase('_pouch_' + name);
       request.onerror = function() {
         reject(new Error('Unable to delete ' + name + ' database'));
       };
@@ -61,7 +55,8 @@ var VariablesTestHelper = {
    * @return {Promise}
    */
   addVars: function(items) {
-    var db = new PouchDB('variables');
+    /* global PouchDB */
+    const db = new PouchDB('variables');
     return VariablesTestHelper.addItems(db, items);
   },
 
@@ -72,7 +67,7 @@ var VariablesTestHelper = {
    * @return {Promise}
    */
   addEnvs: function(names) {
-    var db = new PouchDB('variables-environments');
+    const db = new PouchDB('variables-environments');
     if (names instanceof Array) {
       names = names.map(function(item) {
         return {

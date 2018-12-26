@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="helper.js"></script>
+    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <link rel="import" href="../variables-manager.html">
+    <link rel="import" href="../../app-pouchdb/pouchdb.html">
+    <link rel="import" href="../../arc-models/variables-model.html">
+  </head>
+  <body>
+    <variables-model></variables-model>
+    <test-fixture id="Env">
+      <template>
+        <variables-manager environment="test"></variables-manager>
+      </template>
+    </test-fixture>
+
+    <script>
+    /* global VariablesTestHelper */
+    suite('Variables tests', function() {
+      let vars;
+      suiteSetup(function() {
+        return VariablesTestHelper.deleteAllDatabases()
+        .then(() => VariablesTestHelper.addEnvs('test'))
+        .then(() => {
+          vars = [{
+            _id: 'a',
+            variable: 'a',
+            value: 'a',
+            environment: 'test'
+          }, {
+            _id: 'b',
+            variable: 'b',
+            value: 'b',
+            environment: 'test'
+          }];
+          return VariablesTestHelper.addVars(vars);
+        });
+      });
+
+      suite('Variable updated', function() {
+        let element;
+        setup((done) => {
+          element = fixture('Env');
+          element.addEventListener('initialized-changed', function clb() {
+            element.removeEventListener('initialized-changed', clb);
+            done();
+          });
+        });
+
+        test('Ignores variable for another environment', function() {
+          const item = Object.assign({}, vars[0]);
+          item.environment = 'other';
+          item.variable = 'x';
+          document.body.dispatchEvent(new CustomEvent('variable-updated', {
+            bubbles: true,
+            detail: {
+              value: item
+            }
+          }));
+          assert.equal(element.variables[0].variable, 'a');
+        });
+
+        test('Updates existing variable', function() {
+          const item = Object.assign({}, vars[0]);
+          item.variable = 'x';
+          document.body.dispatchEvent(new CustomEvent('variable-updated', {
+            bubbles: true,
+            detail: {
+              value: item
+            }
+          }));
+          assert.equal(element.variables[0].variable, 'x');
+        });
+
+        test('Adds new variable', function() {
+          const item = {
+            _id: 'c',
+            variable: 'c',
+            value: 'c',
+            environment: 'test'
+          };
+          document.body.dispatchEvent(new CustomEvent('variable-updated', {
+            bubbles: true,
+            detail: {
+              value: item
+            }
+          }));
+          assert.deepEqual(element.variables[2], item);
+        });
+      });
+
+      suite('Variable deleted', function() {
+        let element;
+        setup((done) => {
+          element = fixture('Env');
+          element.addEventListener('initialized-changed', function clb() {
+            element.removeEventListener('initialized-changed', clb);
+            done();
+          });
+        });
+
+        test('Ignores non existin variable', function() {
+          document.body.dispatchEvent(new CustomEvent('variable-deleted', {
+            bubbles: true,
+            detail: {
+              id: 'x'
+            }
+          }));
+          assert.lengthOf(element.variables, 2);
+        });
+
+        test('Removes variable from list', function() {
+          document.body.dispatchEvent(new CustomEvent('variable-deleted', {
+            bubbles: true,
+            detail: {
+              id: 'a'
+            }
+          }));
+          assert.lengthOf(element.variables, 1);
+          assert.equal(element.variables[0].variable, 'b');
+        });
+      });
+    });
+    </script>
+
+  </body>
+</html>
