@@ -1,81 +1,87 @@
 <!doctype html>
-<!--
-@license
-Copyright 2016 The Advanced REST client authors <arc@mulesoft.com>
-Licensed under the Apache License, Version 2.0 (the "License"); you may not
-use this file except in compliance with the License. You may obtain a copy of
-the License at
-http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations under
-the License.
--->
 <html>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
-    <script src="../../iron-test-helpers/test-helpers.js"></script>
-    <script src="../../iron-test-helpers/mock-interactions.js"></script>
     <script src="helper.js"></script>
     <link rel="import" href="../variables-manager.html">
-    <link rel="import" href="../../arc-polyfills/arc-polyfills.html">
+    <link rel="import" href="../../app-pouchdb/pouchdb.html">
+    <link rel="import" href="../../arc-models/variables-model.html">
   </head>
   <body>
+    <variables-model></variables-model>
 
-    <test-fixture id="basic">
+    <test-fixture id="Basic">
       <template>
         <variables-manager></variables-manager>
       </template>
     </test-fixture>
 
+    <test-fixture id="Env">
+      <template>
+        <variables-manager environment="test"></variables-manager>
+      </template>
+    </test-fixture>
+
     <script>
-    /* global fixture, assert, sinon, VariablesTestHelper */
-    suite(VariablesTestHelper.suiteName('environment-deleted'), function() {
-      var databaseRecordId;
-      var element;
+    /* global VariablesTestHelper */
+    suite('environment-deleted', function() {
+      let ids;
+      let element;
 
-      suiteSetup(function(done) {
-        VariablesTestHelper.deleteDatabase('variables-environments')
-        .then(function() {
-          return VariablesTestHelper.addEnvs('test');
-        })
-        .then(function(result) {
-          databaseRecordId = result.id;
-          done();
-        })
-        .catch(function(cause) {
-          done(new Error(cause.message));
+      suiteSetup(function() {
+        return VariablesTestHelper.deleteDatabase('variables-environments')
+        .then(() => VariablesTestHelper.addEnvs(['test', 'other']))
+        .then((result) => {
+          ids = result.map((item) => item.id);
         });
       });
 
-      setup(function(done) {
-        element = fixture('basic');
-        VariablesTestHelper.fire('selected-environment-changed', {
-          value: 'test'
-        });
-        var cb = function(e) {
-          if (e.detail.value === undefined || e.detail.environment !== 'test') {
-            return;
-          }
-          element.removeEventListener('variables-list-changed', cb);
+      test('Ignores when default is selected', function(done) {
+        element = fixture('Basic');
+        element.addEventListener('initialized-changed', function clb() {
+          element.removeEventListener('initialized-changed', clb);
+          document.body.dispatchEvent(new CustomEvent('environment-deleted', {
+            bubbles: true,
+            detail: {
+              id: ids[0]
+            }
+          }));
+          assert.isUndefined(element._env);
+          assert.equal(element.environment, 'default');
           done();
-        };
-        element.addEventListener('variables-list-changed', cb);
+        });
       });
 
-      test('The environment-deleted event is cancelled', function(done) {
-        var event = VariablesTestHelper.fire('environment-deleted', {
-          value: databaseRecordId
+      test('Ignores when is not selected', function(done) {
+        element = fixture('Env');
+        element.addEventListener('initialized-changed', function clb() {
+          element.removeEventListener('initialized-changed', clb);
+          document.body.dispatchEvent(new CustomEvent('environment-deleted', {
+            bubbles: true,
+            detail: {
+              id: ids[1]
+            }
+          }));
+          assert.equal(element.environment, 'test');
+          done();
         });
-        // it must be wrapped in event listener or another test will fail
-        // because this would still running.
-        element.addEventListener('environment-deleted', function() {
-          assert.isTrue(event.defaultPrevented);
+      });
+
+      test('Sets default environment', function(done) {
+        element = fixture('Env');
+        element.addEventListener('initialized-changed', function clb() {
+          element.removeEventListener('initialized-changed', clb);
+          document.body.dispatchEvent(new CustomEvent('environment-deleted', {
+            bubbles: true,
+            detail: {
+              id: ids[0]
+            }
+          }));
+          assert.equal(element.environment, 'default');
+          assert.isUndefined(element._env);
           done();
         });
       });
