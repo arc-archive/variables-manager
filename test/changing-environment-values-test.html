@@ -6,7 +6,7 @@
     <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
     <link rel="import" href="../variables-manager.html">
-    <link rel="import" href="../../app-pouchdb/pouchdb.html">
+    <link rel="import" href="../../arc-data-generator/arc-data-generator.html">
     <link rel="import" href="../../arc-models/variables-model.html">
     <script src="helper.js"></script>
   </head>
@@ -19,12 +19,11 @@
     </test-fixture>
 
     <script>
-    /* global VariablesTestHelper */
+    /* global VariablesTestHelper, DataGenerator */
     suite('Changing environment with values', function() {
 
       suiteSetup(function() {
-        return VariablesTestHelper.deleteAllDatabases()
-        .then(() => VariablesTestHelper.addEnvs('test'))
+        return VariablesTestHelper.addEnvs('test')
         .then(() => {
           const vars = [{
             variable: 'test',
@@ -38,6 +37,8 @@
           return VariablesTestHelper.addVars(vars);
         });
       });
+
+      suiteTeardown(() => DataGenerator.destroyVariablesData());
 
       let element;
       setup(function() {

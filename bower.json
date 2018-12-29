@@ -40,7 +40,8 @@
     "paper-toast": "PolymerElements/paper-toast#^2.0.0",
     "arc-icons": "advanced-rest-client/arc-icons#^2.0.0",
     "paper-dialog": "PolymerElements/paper-dialog#^2.0.0",
-    "variables-consumer-mixin": "advanced-rest-client/variables-consumer-mixin#2.0.0-preview"
+    "variables-consumer-mixin": "advanced-rest-client/variables-consumer-mixin#^2.0.0",
+    "arc-data-generator": "advanced-rest-client/arc-data-generator#^1.0.7"
   },
   "ignore": [
     "**/.*",

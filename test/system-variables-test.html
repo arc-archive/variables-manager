@@ -7,7 +7,7 @@
     <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
     <link rel="import" href="../variables-manager.html">
-    <link rel="import" href="../../app-pouchdb/pouchdb.html">
+    <link rel="import" href="../../arc-data-generator/arc-data-generator.html">
     <link rel="import" href="../../arc-models/variables-model.html">
   </head>
   <body>
@@ -25,7 +25,7 @@
     </test-fixture>
 
     <script>
-    /* global VariablesTestHelper */
+    /* global VariablesTestHelper, DataGenerator */
     suite('System variables tests', function() {
       suite('Basic computation', () => {
         let element;
@@ -38,9 +38,7 @@
           };
         });
 
-        suiteSetup(function() {
-          return VariablesTestHelper.deleteAllDatabases();
-        });
+        suiteTeardown(() => DataGenerator.destroyVariablesData());
 
         test('Computes _sysVars', (done) => {
           element = fixture('Env');
@@ -105,8 +103,9 @@
       suite('Combination with app variables', () => {
         let vars;
         suiteSetup(function() {
-          return VariablesTestHelper.deleteAllDatabases()
-          .then(() => VariablesTestHelper.addEnvs('test'))
+          return document.querySelector('variables-model').updateEnvironment({
+            name: 'test'
+          })
           .then(() => {
             vars = [{
               _id: 'a',
@@ -122,6 +121,8 @@
             return VariablesTestHelper.addVars(vars);
           });
         });
+
+        suiteTeardown(() => DataGenerator.destroyVariablesData());
 
         let element;
         setup((done) => {

@@ -3,11 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <script src="helper.js"></script>
     <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
     <link rel="import" href="../variables-manager.html">
-    <link rel="import" href="../../app-pouchdb/pouchdb.html">
+    <link rel="import" href="../../arc-data-generator/arc-data-generator.html">
     <link rel="import" href="../../arc-models/variables-model.html">
   </head>
   <body>
@@ -26,7 +25,7 @@
     </test-fixture>
 
     <script>
-    /* global VariablesTestHelper */
+    /* global DataGenerator */
     suite('Initialization', function() {
       let listFn;
       const noop = () => {};
@@ -39,12 +38,14 @@
           e.detail.result = Promise.resolve();
         };
         window.addEventListener('environment-list-variables', listFn);
-        return VariablesTestHelper.deleteAllDatabases()
-        .then(() => VariablesTestHelper.addEnvs('test-env'));
+        return document.querySelector('variables-model').updateEnvironment({
+          name: 'test-env'
+        });
       });
 
       suiteTeardown(() => {
         window.removeEventListener('environment-list-variables', listFn);
+        return DataGenerator.destroyVariablesData();
       });
 
       test('Dispatches environment-current', function() {
