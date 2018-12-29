@@ -22,33 +22,6 @@ const VariablesTestHelper = {
     return event;
   },
   /**
-   * Deletes PouchDB database
-   *
-   * @param {String} name Database name without `_pouch_` prefix
-   * @return {Promise}
-   */
-  deleteDatabase: function(name) {
-    return new Promise(function(resolve, reject) {
-      const request = window.indexedDB.deleteDatabase('_pouch_' + name);
-      request.onerror = function() {
-        reject(new Error('Unable to delete ' + name + ' database'));
-      };
-      request.onsuccess = function() {
-        resolve();
-      };
-    });
-  },
-  /**
-   * Deletes both variables and environments databases.
-   * @return {Promise}
-   */
-  deleteAllDatabases: function() {
-    return Promise.all([
-      VariablesTestHelper.deleteDatabase('variables-environments'),
-      VariablesTestHelper.deleteDatabase('variables')
-    ]);
-  },
-  /**
    * Adds one or more test variables.
    *
    * @param {Array|Object} items List of items to add or an item to add

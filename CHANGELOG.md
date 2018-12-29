@@ -1,4 +1,35 @@
 <a name="2.0.0"></a>
+# [2.0.0](https://github.com/advanced-rest-client/variables-manager/compare/0.1.16...2.0.0) (2018-12-29)
+
+
+### Breaking
+
+* Changing events API for update/delete events ([9bbe2ba8dbcdc5983bd468a5515d65c6558f92be](https://github.com/advanced-rest-client/variables-manager/commit/9bbe2ba8dbcdc5983bd468a5515d65c6558f92be))
+* Moving PouchDB to the list of optional dependencies ([73b712999b86644bc5be6fcc8f61ddac055af5fc](https://github.com/advanced-rest-client/variables-manager/commit/73b712999b86644bc5be6fcc8f61ddac055af5fc))
+* Updating manager to work with new API ([a11af6eb1fed14f1023a3bcee06f6bc08f3a2933](https://github.com/advanced-rest-client/variables-manager/commit/a11af6eb1fed14f1023a3bcee06f6bc08f3a2933))
+
+### Docs
+
+* Updating docs ([106dbdd854527e2ca3c28e2db71074a5eb7770dc](https://github.com/advanced-rest-client/variables-manager/commit/106dbdd854527e2ca3c28e2db71074a5eb7770dc))
+
+### Fix
+
+* Fixing linter errors ([97cf373f7eba5f00a8db76aa0e80917e7034d04a](https://github.com/advanced-rest-client/variables-manager/commit/97cf373f7eba5f00a8db76aa0e80917e7034d04a))
+* Fixing tests ([094ddefc97f2befb4dd114b1ea92d6509c77c5e7](https://github.com/advanced-rest-client/variables-manager/commit/094ddefc97f2befb4dd114b1ea92d6509c77c5e7))
+* Fixing variable misspels ([f96e124ea45d3a6b6b83d8773d38e898b67ddfd2](https://github.com/advanced-rest-client/variables-manager/commit/f96e124ea45d3a6b6b83d8773d38e898b67ddfd2))
+
+### New
+
+* Adding option to disable system variables ([82261e527cb93727e1e5df2280d2bad2ff1bb62e](https://github.com/advanced-rest-client/variables-manager/commit/82261e527cb93727e1e5df2280d2bad2ff1bb62e))
+
+### Update
+
+* Adding datastore destroy event handler ([f315ea6dcccf3f2d026373a7c9017041e407e073](https://github.com/advanced-rest-client/variables-manager/commit/f315ea6dcccf3f2d026373a7c9017041e407e073))
+* Updating return value. ([8182a5ae4a62334975515789165f84d0d7e3c0bd](https://github.com/advanced-rest-client/variables-manager/commit/8182a5ae4a62334975515789165f84d0d7e3c0bd))
+
+
+
+<a name="2.0.0"></a>
 # [2.0.0](https://github.com/advanced-rest-client/variables-manager/compare/0.1.16...2.0.0) (2018-12-26)
 
 

@@ -7,7 +7,7 @@
     <script src="../../web-component-tester/browser.js"></script>
     <script src="helper.js"></script>
     <link rel="import" href="../variables-manager.html">
-    <link rel="import" href="../../app-pouchdb/pouchdb.html">
+    <link rel="import" href="../../arc-data-generator/arc-data-generator.html">
     <link rel="import" href="../../arc-models/variables-model.html">
   </head>
   <body>
@@ -26,18 +26,19 @@
     </test-fixture>
 
     <script>
-    /* global VariablesTestHelper */
+    /* global VariablesTestHelper, DataGenerator */
     suite('environment-deleted', function() {
       let ids;
       let element;
 
       suiteSetup(function() {
-        return VariablesTestHelper.deleteDatabase('variables-environments')
-        .then(() => VariablesTestHelper.addEnvs(['test', 'other']))
+        return VariablesTestHelper.addEnvs(['test', 'other'])
         .then((result) => {
           ids = result.map((item) => item.id);
         });
       });
+
+      suiteTeardown(() => DataGenerator.destroyVariablesData());
 
       test('Ignores when default is selected', function(done) {
         element = fixture('Basic');
