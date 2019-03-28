@@ -1,4 +1,4 @@
-<!--
+/**
 @license
 Copyright 2018 The Advanced REST client authors <arc@mulesoft.com>
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -10,11 +10,11 @@ distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
--->
-<link rel="import" href="../polymer/polymer-element.html">
-<link rel="import" href="../polymer/lib/utils/render-status.html">
-<link rel="import" href="../events-target-behavior/events-target-behavior.html">
-<script>
+*/
+import { PolymerElement } from '../../@polymer/polymer/polymer-element.js';
+
+import { afterNextRender } from '../../@polymer/polymer/lib/utils/render-status.js';
+import { EventsTargetBehavior } from '../../events-target-behavior/events-target-behavior.js';
 /**
  * A manager for environments and variables. Non UI element that manages variables
  * state and handle data storage.
@@ -37,7 +37,7 @@ the License.
  * @demo demo/index.html
  * @appliesMixin ArcBehaviors.EventsTargetBehavior
  */
-class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element) {
+class VariablesManager extends EventsTargetBehavior(PolymerElement) {
   static get is() {
     return 'variables-manager';
   }
@@ -217,7 +217,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
       return;
     }
     this._envChangeDebouncer = true;
-    Polymer.RenderStatus.afterNextRender(this, () => {
+    afterNextRender(this, () => {
       this._envChangeDebouncer = false;
       this.__environmentChanged(this.environment);
     });
@@ -285,7 +285,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
       }
       this._retryingModel = true;
       return new Promise((resolve, reject) => {
-        Polymer.RenderStatus.afterNextRender(this, () => {
+        afterNextRender(this, () => {
           this._readEnvObjectData(environment)
           .then((data) => resolve(data))
           .catch((cause) => reject(cause));
@@ -372,7 +372,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
       }
       this._retryingModel = true;
       return new Promise((resolve, reject) => {
-        Polymer.RenderStatus.afterNextRender(this, () => {
+        afterNextRender(this, () => {
           this._updateVariablesList()
           .then((data) => resolve(data))
           .catch((cause) => reject(cause));
@@ -436,7 +436,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    * and variables.
    */
   _dataImportHandler() {
-    Polymer.RenderStatus.afterNextRender(this, () => this._updateVariablesList());
+    afterNextRender(this, () => this._updateVariablesList());
   }
 
   /**
@@ -459,7 +459,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     if (this.environment !== 'default') {
       this.environment = 'default';
     } else {
-      Polymer.RenderStatus.afterNextRender(this, () => this._updateVariablesList());
+      afterNextRender(this, () => this._updateVariablesList());
     }
   }
 
@@ -652,7 +652,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     if (!this.initialized) {
       return;
     }
-    Polymer.RenderStatus.afterNextRender(this, () => this._notifyVarsListChanged());
+    afterNextRender(this, () => this._notifyVarsListChanged());
   }
 
   _computeAppVars(record, appVariablesDisabled) {
@@ -666,7 +666,7 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
     if (!this.initialized) {
       return;
     }
-    Polymer.RenderStatus.afterNextRender(this, () => this._notifyVarsListChanged());
+    afterNextRender(this, () => this._notifyVarsListChanged());
   }
   /**
    * Fired when selected environment has changed.
@@ -696,4 +696,3 @@ class VariablesManager extends ArcBehaviors.EventsTargetBehavior(Polymer.Element
    */
 }
 window.customElements.define(VariablesManager.is, VariablesManager);
-</script>

@@ -3,11 +3,13 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
-    <script src="../../web-component-tester/browser.js"></script>
-    <link rel="import" href="../variables-manager.html">
-    <link rel="import" href="../../arc-data-generator/arc-data-generator.html">
-    <link rel="import" href="../../arc-models/variables-model.html">
+
+    <script src="../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../../../@polymer/test-fixture/test-fixture.js"></script>
+    <script src="../../../mocha/mocha.js"></script>
+    <script src="../../../chai/chai.js"></script>
+    <script src="../../../wct-mocha/wct-mocha.js"></script>
+
   </head>
   <body>
     <variables-model></variables-model>
@@ -24,7 +26,11 @@
       </template>
     </test-fixture>
 
-    <script>
+    <script type="module">
+    import '../variables-manager.js';
+    import '../../../arc-data-generator/arc-data-generator.js';
+    import '../../../arc-models/variables-model.js';
+    import { afterNextRender } from '../../../@polymer/polymer/lib/utils/render-status.js';
     /* global DataGenerator */
     suite('Initialization', function() {
       let listFn;
@@ -107,7 +113,7 @@
         window.addEventListener('environment-read', readFunction);
         const element = fixture('Env');
         element._updateVariablesList = noop;
-        Polymer.RenderStatus.afterNextRender(this, () => {
+        afterNextRender(this, () => {
           assert.isTrue(called, 'Event was not dispatched');
           setTimeout(() => {
             window.removeEventListener('environment-read', readFunction);

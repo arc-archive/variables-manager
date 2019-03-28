@@ -1,22 +1,44 @@
 {
-  "name": "@advanced-rest-client/variables-manager",
-  "version": "2.0.0",
-  "license": "Apache-2.0",
   "description": "A manager for environments and variables. Non UI element that manages variables state and handle storage",
-  "devDependencies": {
-    "@polymer/gen-typescript-declarations": "^1.6.0"
+  "keywords": [
+    "web-components",
+    "polymer"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/advanced-rest-client/variables-manager.git"
   },
-  "private": false,
-  "main": "variables-manager.html",
+  "name": "@advanced-rest-client/variables-manager",
+  "version": "3.0.0-preview.1",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@polymer/gen-typescript-declarations": "^1.6.0",
+    "@polymer/iron-component-page": "^4.0.0",
+    "@polymer/iron-demo-helpers": "^3.0.0",
+    "@polymer/iron-test-helpers": "^3.0.0",
+    "@webcomponents/webcomponentsjs": "^2.0.0",
+    "@polymer/paper-input": "^3.0.0",
+    "@polymer/paper-button": "^3.0.0",
+    "@polymer/paper-icon-button": "^3.0.0",
+    "@polymer/iron-form": "^3.0.0",
+    "@polymer/paper-dropdown-menu": "^3.0.0",
+    "@polymer/paper-listbox": "^3.0.0",
+    "@polymer/paper-item": "^3.0.0",
+    "web-animations-js": "^2.3.1",
+    "@polymer/paper-toast": "^3.0.0",
+    "@polymer/paper-dialog": "^3.0.0",
+    "@polymer/test-fixture": "^4.0.2",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "sinon": "^7.2.3",
+    "wct-mocha": "^1.0.0"
+  },
+  "main": "variables-manager.js",
   "scripts": {
     "lint": "polymer lint variables-manager.html",
     "test-sauce": "polymer test --plugin sauce --job-name \"variables-manager:local-test\"",
     "test": "polymer test --plugin local",
     "update-types": "gen-typescript-declarations --deleteExisting --outDir ."
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/advanced-rest-client/variables-manager.git"
   },
   "bugs": {
     "url": "https://github.com/advanced-rest-client/variables-manager/issues",
@@ -25,5 +47,12 @@
   "authors": [
     "Pawel Psztyc",
     "The Advanced REST client authors <arc@mulesoft.com>"
-  ]
+  ],
+  "contributors": [
+    "Pawel Psztyc",
+    "The Advanced REST client authors <arc@mulesoft.com>"
+  ],
+  "dependencies": {
+    "@polymer/polymer": "^3.0.0"
+  }
 }
