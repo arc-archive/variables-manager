@@ -10,6 +10,7 @@
     <script src="../../../chai/chai.js"></script>
     <script src="../../../wct-mocha/wct-mocha.js"></script>
 
+    <script src="../../../pouchdb/dist/pouchdb.js"></script>
   </head>
   <body>
     <variables-model></variables-model>
@@ -27,9 +28,8 @@
 
     <script type="module">
     import '../variables-manager.js';
-    import '../../../arc-data-generator/arc-data-generator.js';
-    import '../../../arc-models/variables-model.js';
-    /* global DataGenerator */
+    import '../../../@advanced-rest-client/arc-models/variables-model.js';
+    import {DataGenerator} from '../../../@advanced-rest-client/arc-data-generator/arc-data-generator.js';
     suite('environment-updated', function() {
       let createdId;
 

@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <script src="./helper.js"></script>
 
     <script src="../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../../@polymer/test-fixture/test-fixture.js"></script>
@@ -11,6 +10,7 @@
     <script src="../../../chai/chai.js"></script>
     <script src="../../../wct-mocha/wct-mocha.js"></script>
 
+    <script src="../../../pouchdb/dist/pouchdb.js"></script>
   </head>
   <body>
     <variables-model></variables-model>
@@ -28,9 +28,10 @@
 
     <script type="module">
     import '../variables-manager.js';
-    import '../../../arc-data-generator/arc-data-generator.js';
-    import '../../../arc-models/variables-model.js';
-    /* global VariablesTestHelper, DataGenerator */
+    import '../../../@advanced-rest-client/arc-models/variables-model.js';
+    import {DataGenerator} from '../../../@advanced-rest-client/arc-data-generator/arc-data-generator.js';
+    import {VariablesTestHelper} from './helper.js';
+
     suite('System variables tests', function() {
       suite('Basic computation', () => {
         let element;

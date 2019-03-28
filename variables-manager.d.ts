@@ -5,16 +5,12 @@
  *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
  *
  * To modify these typings, edit the source file(s):
- *   variables-manager.html
+ *   variables-manager.js
  */
 
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 // tslint:disable:no-any describes the API as best we are able today
-
-/// <reference path="../polymer/types/polymer-element.d.ts" />
-/// <reference path="../polymer/types/lib/utils/render-status.d.ts" />
-/// <reference path="../events-target-behavior/events-target-behavior.d.ts" />
 
 declare namespace LogicElements {
 
@@ -35,7 +31,7 @@ declare namespace LogicElements {
    * - Update/Delete actions has been moved to `arc-models/variables-model`
    */
   class VariablesManager extends
-    ArcBehaviors.EventsTargetBehavior(
+    EventsTargetMixin(
     Object) {
 
     /**
@@ -230,6 +226,11 @@ declare namespace LogicElements {
   }
 }
 
-interface HTMLElementTagNameMap {
-  "variables-manager": LogicElements.VariablesManager;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "variables-manager": LogicElements.VariablesManager;
+  }
 }
+
+export {};

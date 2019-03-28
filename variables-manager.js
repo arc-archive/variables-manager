@@ -11,10 +11,9 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import { PolymerElement } from '../../@polymer/polymer/polymer-element.js';
-
-import { afterNextRender } from '../../@polymer/polymer/lib/utils/render-status.js';
-import { EventsTargetBehavior } from '../../events-target-behavior/events-target-behavior.js';
+import {PolymerElement} from '../../@polymer/polymer/polymer-element.js';
+import {afterNextRender} from '../../@polymer/polymer/lib/utils/render-status.js';
+import {EventsTargetMixin} from '../../@advanced-rest-client/events-target-mixin/events-target-mixin.js';
 /**
  * A manager for environments and variables. Non UI element that manages variables
  * state and handle data storage.
@@ -35,12 +34,9 @@ import { EventsTargetBehavior } from '../../events-target-behavior/events-target
  * @customElement
  * @polymer
  * @demo demo/index.html
- * @appliesMixin ArcBehaviors.EventsTargetBehavior
+ * @appliesMixin EventsTargetMixin
  */
-class VariablesManager extends EventsTargetBehavior(PolymerElement) {
-  static get is() {
-    return 'variables-manager';
-  }
+class VariablesManager extends EventsTargetMixin(PolymerElement) {
   static get properties() {
     return {
       /**
@@ -695,4 +691,4 @@ class VariablesManager extends EventsTargetBehavior(PolymerElement) {
    * @param {Object} value Updated variable value.
    */
 }
-window.customElements.define(VariablesManager.is, VariablesManager);
+window.customElements.define('variables-manager', VariablesManager);

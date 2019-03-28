@@ -4,55 +4,8 @@
     {
       "description": "A manager for environments and variables. Non UI element that manages variables\nstate and handle data storage.\n\n### Example\n\n```html\n<variables-manager></variables-manager>\n```\n\n## New in version 2\n\n- PouchDB is optional dependency. Add your own version of PouchDB to use the\ncomponent.\n- Update/Delete actions has been moved to `arc-models/variables-model`",
       "summary": "",
-      "path": "variables-manager.html",
+      "path": "variables-manager.js",
       "properties": [
-        {
-          "name": "eventsTarget",
-          "type": "Object | null | undefined",
-          "description": "Events handlers target. By default the element listens on\n`window` object. If set, all events listeners will be attached to this\nobject instead of `window`.",
-          "privacy": "public",
-          "sourceRange": {
-            "file": "../events-target-behavior/events-target-behavior.html",
-            "start": {
-              "line": 73,
-              "column": 8
-            },
-            "end": {
-              "line": 76,
-              "column": 9
-            }
-          },
-          "metadata": {
-            "polymer": {
-              "observer": "\"_eventsTargetChanged\"",
-              "attributeType": "Object"
-            }
-          },
-          "inheritedFrom": "ArcBehaviors.EventsTargetBehavior"
-        },
-        {
-          "name": "_oldEventsTarget",
-          "type": "Object | null | undefined",
-          "description": "An event target used to attach listeners.",
-          "privacy": "protected",
-          "sourceRange": {
-            "file": "../events-target-behavior/events-target-behavior.html",
-            "start": {
-              "line": 78,
-              "column": 8
-            },
-            "end": {
-              "line": 78,
-              "column": 32
-            }
-          },
-          "metadata": {
-            "polymer": {
-              "attributeType": "Object"
-            }
-          },
-          "inheritedFrom": "ArcBehaviors.EventsTargetBehavior"
-        },
         {
           "name": "environment",
           "type": "string | null | undefined",
@@ -60,11 +13,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 48,
+              "line": 44,
               "column": 6
             },
             "end": {
-              "line": 51,
+              "line": 47,
               "column": 7
             }
           },
@@ -82,11 +35,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 56,
+              "line": 52,
               "column": 6
             },
             "end": {
-              "line": 56,
+              "line": 52,
               "column": 18
             }
           },
@@ -103,11 +56,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 57,
+              "line": 53,
               "column": 6
             },
             "end": {
-              "line": 57,
+              "line": 53,
               "column": 18
             }
           },
@@ -124,11 +77,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 61,
+              "line": 57,
               "column": 6
             },
             "end": {
-              "line": 65,
+              "line": 61,
               "column": 7
             }
           },
@@ -147,11 +100,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 70,
+              "line": 66,
               "column": 6
             },
             "end": {
-              "line": 70,
+              "line": 66,
               "column": 27
             }
           },
@@ -168,11 +121,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 76,
+              "line": 72,
               "column": 6
             },
             "end": {
-              "line": 76,
+              "line": 72,
               "column": 29
             }
           },
@@ -189,11 +142,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 77,
+              "line": 73,
               "column": 6
             },
             "end": {
-              "line": 81,
+              "line": 77,
               "column": 7
             }
           },
@@ -212,11 +165,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 85,
+              "line": 81,
               "column": 6
             },
             "end": {
-              "line": 85,
+              "line": 81,
               "column": 64
             }
           },
@@ -235,11 +188,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 90,
+              "line": 86,
               "column": 6
             },
             "end": {
-              "line": 90,
+              "line": 86,
               "column": 35
             }
           },
@@ -256,11 +209,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 94,
+              "line": 90,
               "column": 6
             },
             "end": {
-              "line": 94,
+              "line": 90,
               "column": 35
             }
           },
@@ -278,11 +231,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 112,
+              "line": 108,
               "column": 2
             },
             "end": {
-              "line": 115,
+              "line": 111,
               "column": 3
             }
           },
@@ -293,66 +246,16 @@
           }
         },
         {
-          "name": "disconnectedCallback",
-          "description": "",
-          "privacy": "public",
-          "sourceRange": {
-            "file": "../events-target-behavior/events-target-behavior.html",
-            "start": {
-              "line": 86,
-              "column": 5
-            },
-            "end": {
-              "line": 91,
-              "column": 6
-            }
-          },
-          "metadata": {},
-          "params": [],
-          "return": {
-            "type": "void"
-          },
-          "inheritedFrom": "ArcBehaviors.EventsTargetBehavior"
-        },
-        {
-          "name": "_eventsTargetChanged",
-          "description": "Removes old handlers (if any) and attaches listeners on new event\nevent target.",
-          "privacy": "protected",
-          "sourceRange": {
-            "file": "../events-target-behavior/events-target-behavior.html",
-            "start": {
-              "line": 99,
-              "column": 4
-            },
-            "end": {
-              "line": 105,
-              "column": 5
-            }
-          },
-          "metadata": {},
-          "params": [
-            {
-              "name": "eventsTarget",
-              "type": "?Node",
-              "description": "Event target to set handlers on. If not set it\nwill set handlers on the `window` object."
-            }
-          ],
-          "return": {
-            "type": "void"
-          },
-          "inheritedFrom": "ArcBehaviors.EventsTargetBehavior"
-        },
-        {
           "name": "_attachListeners",
           "description": "",
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 117,
+              "line": 113,
               "column": 2
             },
             "end": {
-              "line": 128,
+              "line": 124,
               "column": 3
             }
           },
@@ -372,11 +275,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 130,
+              "line": 126,
               "column": 2
             },
             "end": {
-              "line": 141,
+              "line": 137,
               "column": 3
             }
           },
@@ -396,11 +299,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 145,
+              "line": 141,
               "column": 2
             },
             "end": {
-              "line": 167,
+              "line": 163,
               "column": 3
             }
           },
@@ -416,11 +319,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 174,
+              "line": 170,
               "column": 2
             },
             "end": {
-              "line": 193,
+              "line": 189,
               "column": 3
             }
           },
@@ -448,11 +351,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 199,
+              "line": 195,
               "column": 2
             },
             "end": {
-              "line": 207,
+              "line": 203,
               "column": 3
             }
           },
@@ -473,11 +376,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 214,
+              "line": 210,
               "column": 2
             },
             "end": {
-              "line": 223,
+              "line": 219,
               "column": 3
             }
           },
@@ -493,11 +396,11 @@
           "privacy": "private",
           "sourceRange": {
             "start": {
-              "line": 233,
+              "line": 229,
               "column": 2
             },
             "end": {
-              "line": 259,
+              "line": 255,
               "column": 3
             }
           },
@@ -518,11 +421,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 267,
+              "line": 263,
               "column": 2
             },
             "end": {
-              "line": 296,
+              "line": 292,
               "column": 3
             }
           },
@@ -544,11 +447,11 @@
           "privacy": "public",
           "sourceRange": {
             "start": {
-              "line": 302,
+              "line": 298,
               "column": 2
             },
             "end": {
-              "line": 334,
+              "line": 330,
               "column": 3
             }
           },
@@ -565,11 +468,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 339,
+              "line": 335,
               "column": 2
             },
             "end": {
-              "line": 348,
+              "line": 344,
               "column": 3
             }
           },
@@ -585,11 +488,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 356,
+              "line": 352,
               "column": 2
             },
             "end": {
-              "line": 399,
+              "line": 395,
               "column": 3
             }
           },
@@ -606,11 +509,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 406,
+              "line": 402,
               "column": 2
             },
             "end": {
-              "line": 417,
+              "line": 413,
               "column": 3
             }
           },
@@ -632,11 +535,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 425,
+              "line": 421,
               "column": 2
             },
             "end": {
-              "line": 432,
+              "line": 428,
               "column": 3
             }
           },
@@ -657,11 +560,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 437,
+              "line": 433,
               "column": 2
             },
             "end": {
-              "line": 439,
+              "line": 435,
               "column": 3
             }
           },
@@ -677,11 +580,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 445,
+              "line": 441,
               "column": 2
             },
             "end": {
-              "line": 463,
+              "line": 459,
               "column": 3
             }
           },
@@ -702,11 +605,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 465,
+              "line": 461,
               "column": 2
             },
             "end": {
-              "line": 473,
+              "line": 469,
               "column": 3
             }
           },
@@ -723,11 +626,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 475,
+              "line": 471,
               "column": 2
             },
             "end": {
-              "line": 478,
+              "line": 474,
               "column": 3
             }
           },
@@ -747,11 +650,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 488,
+              "line": 484,
               "column": 2
             },
             "end": {
-              "line": 500,
+              "line": 496,
               "column": 3
             }
           },
@@ -772,11 +675,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 508,
+              "line": 504,
               "column": 2
             },
             "end": {
-              "line": 517,
+              "line": 513,
               "column": 3
             }
           },
@@ -797,11 +700,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 523,
+              "line": 519,
               "column": 2
             },
             "end": {
-              "line": 542,
+              "line": 538,
               "column": 3
             }
           },
@@ -822,11 +725,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 549,
+              "line": 545,
               "column": 2
             },
             "end": {
-              "line": 560,
+              "line": 556,
               "column": 3
             }
           },
@@ -847,11 +750,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 567,
+              "line": 563,
               "column": 2
             },
             "end": {
-              "line": 590,
+              "line": 586,
               "column": 3
             }
           },
@@ -872,11 +775,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 595,
+              "line": 591,
               "column": 2
             },
             "end": {
-              "line": 600,
+              "line": 596,
               "column": 3
             }
           },
@@ -899,11 +802,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 606,
+              "line": 602,
               "column": 2
             },
             "end": {
-              "line": 620,
+              "line": 616,
               "column": 3
             }
           },
@@ -925,11 +828,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 625,
+              "line": 621,
               "column": 2
             },
             "end": {
-              "line": 648,
+              "line": 644,
               "column": 3
             }
           },
@@ -950,11 +853,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 650,
+              "line": 646,
               "column": 2
             },
             "end": {
-              "line": 655,
+              "line": 651,
               "column": 3
             }
           },
@@ -970,11 +873,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 657,
+              "line": 653,
               "column": 2
             },
             "end": {
-              "line": 662,
+              "line": 658,
               "column": 3
             }
           },
@@ -994,11 +897,11 @@
           "privacy": "protected",
           "sourceRange": {
             "start": {
-              "line": 664,
+              "line": 660,
               "column": 2
             },
             "end": {
-              "line": 669,
+              "line": 665,
               "column": 3
             }
           },
@@ -1019,11 +922,11 @@
       "metadata": {},
       "sourceRange": {
         "start": {
-          "line": 39,
+          "line": 38,
           "column": 0
         },
         "end": {
-          "line": 696,
+          "line": 692,
           "column": 1
         }
       },
@@ -1032,33 +935,15 @@
       "name": "LogicElements.VariablesManager",
       "attributes": [
         {
-          "name": "events-target",
-          "description": "Events handlers target. By default the element listens on\n`window` object. If set, all events listeners will be attached to this\nobject instead of `window`.",
-          "sourceRange": {
-            "file": "../events-target-behavior/events-target-behavior.html",
-            "start": {
-              "line": 73,
-              "column": 8
-            },
-            "end": {
-              "line": 76,
-              "column": 9
-            }
-          },
-          "metadata": {},
-          "type": "Object | null | undefined",
-          "inheritedFrom": "ArcBehaviors.EventsTargetBehavior"
-        },
-        {
           "name": "environment",
           "description": "Currently loaded environment.",
           "sourceRange": {
             "start": {
-              "line": 48,
+              "line": 44,
               "column": 6
             },
             "end": {
-              "line": 51,
+              "line": 47,
               "column": 7
             }
           },
@@ -1070,11 +955,11 @@
           "description": "List of variables associated with current `environment`.",
           "sourceRange": {
             "start": {
-              "line": 61,
+              "line": 57,
               "column": 6
             },
             "end": {
-              "line": 65,
+              "line": 61,
               "column": 7
             }
           },
@@ -1086,11 +971,11 @@
           "description": "List of variables that overrides all existing variables\n(system or app) and exists only in memory.",
           "sourceRange": {
             "start": {
-              "line": 70,
+              "line": 66,
               "column": 6
             },
             "end": {
-              "line": 70,
+              "line": 66,
               "column": 27
             }
           },
@@ -1102,11 +987,11 @@
           "description": "When set it includes system variables into the list of variables.\nThis should be a map of system variables.",
           "sourceRange": {
             "start": {
-              "line": 76,
+              "line": 72,
               "column": 6
             },
             "end": {
-              "line": 76,
+              "line": 72,
               "column": 29
             }
           },
@@ -1118,11 +1003,11 @@
           "description": "A flag to determine of the component is fully initialized.",
           "sourceRange": {
             "start": {
-              "line": 85,
+              "line": 81,
               "column": 6
             },
             "end": {
-              "line": 85,
+              "line": 81,
               "column": 64
             }
           },
@@ -1134,11 +1019,11 @@
           "description": "When set the `_sysVars` will not be computed and therefore included\ninto variables list.",
           "sourceRange": {
             "start": {
-              "line": 90,
+              "line": 86,
               "column": 6
             },
             "end": {
-              "line": 90,
+              "line": 86,
               "column": 35
             }
           },
@@ -1150,11 +1035,11 @@
           "description": "When set the application (local) defined variables are not included.",
           "sourceRange": {
             "start": {
-              "line": 94,
+              "line": 90,
               "column": 6
             },
             "end": {
-              "line": 94,
+              "line": 90,
               "column": 35
             }
           },
@@ -1195,7 +1080,7 @@
       "slots": [],
       "tagname": "variables-manager",
       "mixins": [
-        "ArcBehaviors.EventsTargetBehavior"
+        "EventsTargetMixin"
       ]
     }
   ]

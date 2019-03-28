@@ -1,13 +1,13 @@
-import { PolymerElement } from '../../../@polymer/polymer/polymer-element.js';
-import '../../../variables-consumer-mixin/variables-consumer-mixin.js';
+import {PolymerElement} from '../../../@polymer/polymer/polymer-element.js';
+import {VariablesConsumerMixin} from '../../../@advanced-rest-client/variables-consumer-mixin/variables-consumer-mixin.js';
 /**
  * An example of implementation of VariablesConsumerMixin
  *
  * @customElement
  * @polymer
- * @appliesMixin ArcComponents.VariablesConsumerMixin
+ * @appliesMixin VariablesConsumerMixin
  */
-class VarsConsumer extends ArcComponents.VariablesConsumerMixin(PolymerElement) {
+class VarsConsumer extends VariablesConsumerMixin(PolymerElement) {
   static get is() {return 'vars-consumer';}
   static get properties() {
     return {

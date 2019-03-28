@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <script src="./helper.js"></script>
 
     <script src="../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../../@polymer/test-fixture/test-fixture.js"></script>
@@ -11,6 +10,7 @@
     <script src="../../../chai/chai.js"></script>
     <script src="../../../wct-mocha/wct-mocha.js"></script>
 
+    <script src="../../../pouchdb/dist/pouchdb.js"></script>
   </head>
   <body>
     <variables-model></variables-model>
@@ -21,11 +21,12 @@
     </test-fixture>
 
     <script type="module">
-    import '../../../arc-data-generator/arc-data-generator.js';
-    import '../../../arc-models/variables-model.js';
+    import '../../../@advanced-rest-client/arc-models/variables-model.js';
     import '../variables-manager.js';
-    import { afterNextRender } from '../../../@polymer/polymer/lib/utils/render-status.js';
-    /* global VariablesTestHelper, DataGenerator */
+    import {afterNextRender} from '../../../@polymer/polymer/lib/utils/render-status.js';
+    import {DataGenerator} from '../../../@advanced-rest-client/arc-data-generator/arc-data-generator.js';
+    import {VariablesTestHelper} from './helper.js';
+    import sinon from '../../../sinon/pkg/sinon-esm.js';
     suite('Changing environment', function() {
       suiteTeardown(() => DataGenerator.destroyVariablesData());
 
@@ -42,7 +43,7 @@
       });
 
       test('Should not fire selected-environment-changed', function(done) {
-        afterNextRender(this, () => {
+        afterNextRender(element, () => {
           const spy = sinon.spy();
           element.addEventListener('selected-environment-changed', spy);
           VariablesTestHelper.fire('selected-environment-changed', {

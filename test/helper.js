@@ -1,7 +1,7 @@
 /**
  * Tests helper with common functions.
  */
-const VariablesTestHelper = {
+export const VariablesTestHelper = {
   /**
    * Fires a custom event
    *
