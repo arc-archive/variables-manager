@@ -11,9 +11,9 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import {PolymerElement} from '../../@polymer/polymer/polymer-element.js';
-import {afterNextRender} from '../../@polymer/polymer/lib/utils/render-status.js';
-import {EventsTargetMixin} from '../../@advanced-rest-client/events-target-mixin/events-target-mixin.js';
+import { LitElement, html, css } from 'lit-element';
+import { EventsTargetMixin } from '@advanced-rest-client/events-target-mixin/events-target-mixin.js';
+import '@advanced-rest-client/arc-models/variables-model.js';
 /**
  * A manager for environments and variables. Non UI element that manages variables
  * state and handle data storage.
@@ -32,64 +32,184 @@ import {EventsTargetMixin} from '../../@advanced-rest-client/events-target-mixin
  *
  * @memberof LogicElements
  * @customElement
- * @polymer
  * @demo demo/index.html
  * @appliesMixin EventsTargetMixin
  */
-class VariablesManager extends EventsTargetMixin(PolymerElement) {
+class VariablesManager extends EventsTargetMixin(LitElement) {
+  static get styles() {
+    return css`:host { display: none !important; }`;
+  }
+
+  render() {
+    let target = this.eventsTarget;
+    if (target === window) {
+      target = this;
+    }
+    return html`<variables-model .eventsTarget="${target}"></variables-model>`;
+  }
+
   static get properties() {
     return {
       /**
        * Currently loaded environment.
        */
-      environment: {
-        type: String,
-        observer: '_environmentChanged'
-      },
+      environment: { type: String },
       /**
        * Selected environment object from the data store if different than
        * "default".
        */
-      _env: Object,
-      _vars: Array,
+      _env: { type: Object },
+      _vars: { type: Array },
       /**
        * List of variables associated with current `environment`.
        */
-      variables: {
-        type: Array,
-        computed: '_computeAppVars(_vars.*, appVariablesDisabled)',
-        observer: '_appVarsChanged'
-      },
+      _variables: { type: Array },
       /**
        * List of variables that overrides all existing variables
        * (system or app) and exists only in memory.
        */
-      inMemVariables: Array,
+      inMemVariables: { type: Array },
       /**
        * When set it includes system variables into the list of variables.
        * This should be a map of system variables.
        * @type {Object}
        */
-      systemVariables: Object,
-      _sysVars: {
-        type: Array,
-        computed: '_computeSysVars(systemVariables, sysVariablesDisabled)',
-        observer: '_sysVarsChanged'
-      },
+      systemVariables: { type: Object },
+
+      _sysVars: { type: Array },
       /**
        * A flag to determine of the component is fully initialized.
        */
-      initialized: {type: Boolean, readOnly: true, notify: true},
+      _initialized: { type: Boolean },
       /**
        * When set the `_sysVars` will not be computed and therefore included
        * into variables list.
        */
-      sysVariablesDisabled: Boolean,
+      sysVariablesDisabled: { type: Boolean },
       /**
        * When set the application (local) defined variables are not included.
        */
-      appVariablesDisabled: Boolean
+      appVariablesDisabled: { type: Boolean }
     };
+  }
+
+  get environment() {
+    return this._environment;
+  }
+
+  set environment(value) {
+    const old = this._environment;
+    if (old === value) {
+      return;
+    }
+    this._environment = value;
+    this._environmentChanged(value);
+  }
+
+  get _env() {
+    return this.__env;
+  }
+
+  set _env(value) {
+    const old = this.__env;
+    if (old === value) {
+      return;
+    }
+    this.__env = value;
+  }
+
+  get _vars() {
+    return this.__vars;
+  }
+
+  set _vars(value) {
+    const old = this.__vars;
+    if (old === value) {
+      return;
+    }
+    this.__vars = value;
+    this._variables = this._computeAppVars(value, this.appVariablesDisabled);
+  }
+
+  get variables() {
+    return this._variables;
+  }
+
+  get _variables() {
+    return this.__variables;
+  }
+
+  set _variables(value) {
+    const old = this.__variables;
+    if (old === value) {
+      return;
+    }
+    this.__variables = value;
+    this._appVarsChanged(value);
+  }
+
+  get initialized() {
+    return this._initialized;
+  }
+
+  get _initialized() {
+    return this.__initialized;
+  }
+
+  set _initialized(value) {
+    const old = this.__initialized;
+    if (old === value) {
+      return;
+    }
+    this.__initialized = value;
+    this.dispatchEvent(new CustomEvent('initialized-changed', {
+      detail: {
+        value
+      }
+    }));
+  }
+
+  get systemVariables() {
+    return this._systemVariables;
+  }
+
+  set systemVariables(value) {
+    const old = this._systemVariables;
+    if (old === value) {
+      return;
+    }
+    this._systemVariables = value;
+    this._sysVars = this._computeSysVars(value, this.sysVariablesDisabled);
+  }
+
+  get sysVariablesDisabled() {
+    return this._sysVariablesDisabled;
+  }
+
+  set sysVariablesDisabled(value) {
+    const old = this._sysVariablesDisabled;
+    if (old === value) {
+      return;
+    }
+    this._sysVariablesDisabled = value;
+    this._sysVars = this._computeSysVars(this.systemVariables, value);
+  }
+
+  get _sysVars() {
+    return this.__sysVars;
+  }
+
+  set _sysVars(value) {
+    const old = this.__sysVars;
+    if (value === old) {
+      return;
+    }
+    this.__sysVars = value;
+    this._sysVarsChanged(value);
+  }
+
+  get _model() {
+    return this.shadowRoot.querySelector('variables-model');
   }
 
   constructor() {
@@ -107,7 +227,10 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
   }
 
   connectedCallback() {
-    super.connectedCallback();
+    if (super.connectedCallback) {
+      super.connectedCallback();
+    }
+    this.setAttribute('aria-hidden', 'true');
     this._initialize();
   }
 
@@ -138,6 +261,9 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
   }
   /**
    * Initializes the element.
+   * It dispatches `environment-current` to ask other managers in the DOM whether
+   * an environment is already selected. If other manager respond then it sets the same
+   * environment. Otherwise it sets `default` environment.
    */
   _initialize() {
     if (!this.environment) {
@@ -156,8 +282,8 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
       } else {
         name = 'default';
       }
-      this.set('environment', name);
-      this.set('inMemVariables', inMem);
+      this.environment = name;
+      this.inMemVariables = inMem;
     } else {
       this._environmentChanged(this.environment);
     }
@@ -173,7 +299,6 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
       return;
     }
     if (typeof systemVariables !== 'object') {
-      console.warn('System variables is not an object');
       return;
     }
     const names = Object.keys(systemVariables);
@@ -213,7 +338,7 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
       return;
     }
     this._envChangeDebouncer = true;
-    afterNextRender(this, () => {
+    setTimeout(() => {
       this._envChangeDebouncer = false;
       this.__environmentChanged(this.environment);
     });
@@ -227,7 +352,7 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
    * @param {String} environment
    * @return {Promise}
    */
-  __environmentChanged(environment) {
+  async __environmentChanged(environment) {
     this._vars = undefined;
     this._env = undefined;
     if (!this._cancelEnvPropagation) {
@@ -242,56 +367,35 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
     if (!environment) {
       return Promise.resolve();
     }
-    return this._readEnvObjectData(environment)
-    .catch((cause) => this._handleException(cause))
-    .then((obj) => {
-      this._env = obj;
-      return this._updateVariablesList();
-    })
-    .then(() => {
-      if (!this.initialized) {
-        this._setInitialized(true);
-      }
-    });
+    let obj;
+    try {
+      obj = await this._readEnvObjectData(environment);
+    } catch (cause) {
+      this._handleException(cause);
+    }
+    this._env = obj;
+    await this._updateVariablesList();
+    if (!this._initialized) {
+      this._initialized = true;
+    }
   }
-
   /**
    * Reads environment object from the data stopre if different than `default`.
    *
    * @param {String} environment Environment value.
    * @return {Promise}
    */
-  _readEnvObjectData(environment) {
+  async _readEnvObjectData(environment) {
     if (!environment || environment === 'default') {
       return Promise.resolve();
     }
-    const e = new CustomEvent('environment-read', {
-      cancelable: true,
-      composed: true,
-      bubbles: true,
-      detail: {
-        environment
-      }
-    });
-    this.dispatchEvent(e);
-    if (!e.defaultPrevented) {
-      if (this._retryingModel) {
-        return Promise.reject(
-          new Error('Variables model not found (environment-read)'));
-      }
-      this._retryingModel = true;
-      return new Promise((resolve, reject) => {
-        afterNextRender(this, () => {
-          this._readEnvObjectData(environment)
-          .then((data) => resolve(data))
-          .catch((cause) => reject(cause));
-        });
-      });
+    const model = this._model;
+    const list = await model.listEnvironments();
+    if (!list || !list.length) {
+      return;
     }
-
-    return e.detail.result;
+    return list.find((item) => item.name === environment);
   }
-
   /**
    * Lists app, sys and in mem variables into single array.
    * @return {Array<Object>} List of all variables.
@@ -350,49 +454,22 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
    * @return {Promise} Resolved promise with the list of variables for the
    * environment.
    */
-  _updateVariablesList() {
+  async _updateVariablesList() {
     const environment = this.environment || 'default';
-    const e = new CustomEvent('environment-list-variables', {
-      composed: true,
-      bubbles: true,
-      cancelable: true,
-      detail: {
-        environment
-      }
-    });
-    this.dispatchEvent(e);
-    if (!e.defaultPrevented) {
-      if (this._retryingModel) {
-        return Promise.reject(
-          new Error('Variables model not found (environment-list-variables)'));
-      }
-      this._retryingModel = true;
-      return new Promise((resolve, reject) => {
-        afterNextRender(this, () => {
-          this._updateVariablesList()
-          .then((data) => resolve(data))
-          .catch((cause) => reject(cause));
-        });
-      });
-    }
-    return e.detail.result
-    .then((variables) => {
+    const model = this._model;
+    try {
+      const variables = (await  model.listVariables(environment) || []);
       if (environment !== this.environment) {
         // In some cases (changing environment right after initialization)
         // this may actually happen. Especially on slow IE.
-        let msg = 'Skipping setting variables list. Environment changed ';
-        msg += 'from %s to %s';
-        console.info(msg, environment, this.environment);
         return;
       }
-      variables = variables || [];
-      this.set('_vars', variables);
-    })
-    .catch((cause) => {
+      this._vars = variables;
+    } catch (cause) {
       this._handleException(cause);
-      this.set('_vars', []);
-    })
-    .then(() => this._notifyVarsListChanged());
+      this._vars = [];
+    }
+    this._notifyVarsListChanged();
   }
   /**
    * Handles exceptions when occur by logging them to the console and
@@ -410,7 +487,6 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
         fatal: false
       }
     }));
-    console.error(cause);
   }
   /**
    * A handler for the `selected-environment-changed` custom event.
@@ -424,7 +500,7 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
       return;
     }
     this._cancelEnvPropagation = true;
-    this.set('environment', e.detail.value);
+    this.environment = e.detail.value;
     this._cancelEnvPropagation = false;
   }
   /**
@@ -432,7 +508,7 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
    * and variables.
    */
   _dataImportHandler() {
-    afterNextRender(this, () => this._updateVariablesList());
+    setTimeout(() => this._updateVariablesList());
   }
 
   /**
@@ -440,7 +516,7 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
    * @param {CustomEvent} e
    */
   _onDatabaseDestroy(e) {
-    let {datastore} = e.detail;
+    let { datastore } = e.detail;
     if (!datastore || !datastore.length) {
       return;
     }
@@ -455,7 +531,7 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
     if (this.environment !== 'default') {
       this.environment = 'default';
     } else {
-      afterNextRender(this, () => this._updateVariablesList());
+      setTimeout(() => this._updateVariablesList());
     }
   }
 
@@ -527,15 +603,16 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
     }
     const vars = this._vars;
     if (!vars) {
-      this.set('_vars', [variable]);
+      this._vars = [variable];
       return;
     }
     const index = vars.findIndex((item) => item._id === variable._id);
     if (~index) {
-      this.set(['_vars', index], variable);
+      vars[index] = variable;
     } else {
-      this.push('_vars', variable);
+      vars[vars.length] = variable;
     }
+    this._vars = [...vars];
   }
   /**
    * Removes the valiable from the lsit of variables if the variable is
@@ -551,7 +628,9 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
       const id = e.detail.id;
       const index = this._vars.findIndex((item) => item._id === id);
       if (~index) {
-        this.splice('_vars', index, 1);
+        const vars = this._vars;
+        vars.splice(index, 1);
+        this._vars = [...vars];
       }
     }
   }
@@ -566,7 +645,7 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
       return;
     }
     e.preventDefault();
-    const {variable, value} = e.detail;
+    const { variable, value } = e.detail;
     const index = this._variableIndexByName(variable);
     let obj;
     if (index === -1) {
@@ -581,9 +660,8 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
       obj = this._vars[index];
       obj.value = value;
     }
-    const p = this._updateVariable(obj);
-    e.detail.result = p;
-    return p;
+    e.detail.result = this._updateVariable(obj);
+    return e.detail.result;
   }
   /**
    * @param {String} name Variable name
@@ -600,20 +678,8 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
    * @param {Object} value Variable to update
    * @return {Promise}
    */
-  _updateVariable(value) {
-    const e = new CustomEvent('variable-updated', {
-      composed: true,
-      bubbles: true,
-      cancelable: true,
-      detail: {
-        value
-      }
-    });
-    this.dispatchEvent(e);
-    if (!e.defaultPrevented) {
-      throw new Error('variables-model not found');
-    }
-    return e.detail.result;
+  async _updateVariable(value) {
+    return await this._model.updateVariable(value);
   }
   /**
    * In memory variable change - without storing it to the store.
@@ -623,11 +689,9 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
     if (!e.defaultPrevented) {
       e.preventDefault();
     }
-    if (!this.inMemVariables) {
-      this.inMemVariables = [];
-    }
-    const {variable, value} = e.detail;
-    const index = this.inMemVariables.findIndex((item) => item.variable === variable);
+    const vars = this.inMemVariables || [];
+    const { variable, value } = e.detail;
+    const index = vars.findIndex((item) => item.variable === variable);
     let obj;
     if (index === -1) {
       obj = {
@@ -637,10 +701,11 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
         sysVar: false,
         environment: '*'
       };
-      this.push('inMemVariables', obj);
+      vars[vars.length] = obj;
     } else {
-      this.set(`inMemVariables.${index}.value`, value);
+      vars[index].value = value;
     }
+    this.inMemVariables = [...vars];
     this._notifyVarsListChanged();
   }
 
@@ -648,21 +713,21 @@ class VariablesManager extends EventsTargetMixin(PolymerElement) {
     if (!this.initialized) {
       return;
     }
-    afterNextRender(this, () => this._notifyVarsListChanged());
+    setTimeout(() => this._notifyVarsListChanged());
   }
 
-  _computeAppVars(record, appVariablesDisabled) {
+  _computeAppVars(value, appVariablesDisabled) {
     if (appVariablesDisabled) {
       return;
     }
-    return record.base;
+    return value;
   }
 
   _appVarsChanged() {
     if (!this.initialized) {
       return;
     }
-    afterNextRender(this, () => this._notifyVarsListChanged());
+    setTimeout(() => this._notifyVarsListChanged());
   }
   /**
    * Fired when selected environment has changed.

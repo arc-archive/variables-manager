@@ -32,31 +32,52 @@ npm install --save @advanced-rest-client/variables-manager
 ```html
 <html>
   <head>
-    <!-- PouchDB is not ES6 ready -->
-    <script src="../../../pouchdb/dist/pouchdb.js"></script>
     <script type="module">
       import './node_modules/@advanced-rest-client/variables-manager/variables-manager.js';
       import './node_modules/@advanced-rest-client/arc-models/variables-model.js';
     </script>
   </head>
   <body>
-    <variables-model></variables-model>
     <variables-manager></variables-manager>
   </body>
 </html>
 ```
 
+### In a LitElement template
+
+```javascript
+import { LitElement, html } from 'lit-element';
+import '@advanced-rest-client/variables-manager/variables-manager.js';
+
+class SampleElement extends LitElement {
+  render() {
+    return html`
+    <variables-manager
+      @environment-changed="${this._environmentHandler}"
+      @variables-changed="${this._variablesHandler}"></variables-manager>
+    `;
+  }
+
+  _environmentHandler(e) {
+    this.currentEnvironment = e.target.environment; // or e.detail.value;
+  }
+
+  _environmentHandler(e) {
+    this.currentVariables = e.target.variables; // or e.detail.value;
+  }
+}
+customElements.define('sample-element', SampleElement);
+```
+
 ### In a Polymer 3 element
 
 ```js
-import {PolymerElement, html} from './node_modules/@polymer/polymer';
-import './node_modules/@advanced-rest-client/variables-manager/variables-manager.js';
-import './node_modules/@advanced-rest-client/arc-models/variables-model.js';
+import {PolymerElement, html} from '@polymer/polymer';
+import '@advanced-rest-client/variables-manager/variables-manager.js';
 
 class SampleElement extends PolymerElement {
   static get template() {
     return html`
-    <variables-model></variables-model>
     <variables-manager environment="{{environment}}" variables="{{currentVariables}}"></variables-manager>
     `;
   }
@@ -68,19 +89,18 @@ customElements.define('sample-element', SampleElement);
 
 ```sh
 git clone https://github.com/advanced-rest-client/variables-manager
-cd api-url-editor
+cd variables-manager
 npm install
-npm install -g polymer-cli
 ```
 
 ### Running the demo locally
 
 ```sh
-polymer serve --npm
-open http://127.0.0.1:<port>/demo/
+npm start
 ```
 
 ### Running the tests
+
 ```sh
-polymer test --npm
+npm test
 ```

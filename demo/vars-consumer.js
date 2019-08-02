@@ -1,5 +1,5 @@
-import {PolymerElement} from '../../../@polymer/polymer/polymer-element.js';
-import {VariablesConsumerMixin} from '../../../@advanced-rest-client/variables-consumer-mixin/variables-consumer-mixin.js';
+import { LitElement } from 'lit-element';
+import { VariablesConsumerMixin } from '@advanced-rest-client/variables-consumer-mixin/variables-consumer-mixin.js';
 /**
  * An example of implementation of VariablesConsumerMixin
  *
@@ -7,12 +7,6 @@ import {VariablesConsumerMixin} from '../../../@advanced-rest-client/variables-c
  * @polymer
  * @appliesMixin VariablesConsumerMixin
  */
-class VarsConsumer extends VariablesConsumerMixin(PolymerElement) {
-  static get is() {return 'vars-consumer';}
-  static get properties() {
-    return {
-
-    };
-  }
+class VarsConsumer extends VariablesConsumerMixin(LitElement) {
 }
-window.customElements.define(VarsConsumer.is, VarsConsumer);
+window.customElements.define('vars-consumer', VarsConsumer);

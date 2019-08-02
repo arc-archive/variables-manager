@@ -1,3 +1,4 @@
+import 'pouchdb/dist/pouchdb.js';
 /**
  * Tests helper with common functions.
  */
@@ -53,6 +54,11 @@ export const VariablesTestHelper = {
       };
     }
     return VariablesTestHelper.addItems(db, names);
+  },
+
+  upsertEnvs: function(obj) {
+    const db = new PouchDB('variables-environments');
+    return VariablesTestHelper.addItems(db, obj);
   },
 
   addItems: function(db, items) {

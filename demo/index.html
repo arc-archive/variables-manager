@@ -1,53 +1,20 @@
-<!DOCTYPE html><html><head>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
   <title>variables-manager demo</title>
-  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
-  <script src="../../../web-animations-js/web-animations-next.min.js"></script>
-
-  <script type="module" src="../../../@polymer/polymer/lib/elements/dom-bind.js"></script>
-  <script type="module" src="../../../@polymer/polymer/lib/elements/dom-if.js"></script>
-  <script type="module" src="../../../@webcomponents/shadycss/entrypoints/apply-shim.js"></script>
-  <script type="module" src="../../../@polymer/polymer/lib/elements/custom-style.js"></script>
-  <script type="module" src="../../../@polymer/iron-demo-helpers/demo-pages-shared-styles.js"></script>
-  <script type="module" src="../../../@polymer/paper-input/paper-input.js"></script>
-  <script type="module" src="../../../@polymer/paper-button/paper-button.js"></script>
-  <script type="module" src="../../../@polymer/iron-form/iron-form.js"></script>
-  <script type="module" src="../../../@polymer/paper-dropdown-menu/paper-dropdown-menu.js"></script>
-  <script type="module" src="../../../@polymer/paper-listbox/paper-listbox.js"></script>
-  <script type="module" src="../../../@polymer/paper-item/paper-item.js"></script>
-  <script type="module" src="../../../@polymer/paper-item/paper-item-body.js"></script>
-  <script type="module" src="../../../@advanced-rest-client/arc-models/variables-model.js"></script>
-  <script type="module" src="../../../@polymer/paper-styles/shadow.js"></script>
-  <script type="module" src="../../../@polymer/paper-styles/typography.js"></script>
-  <script type="module" src="../../../@polymer/paper-toast/paper-toast.js"></script>
-  <script type="module" src="../../../@polymer/paper-icon-button/paper-icon-button.js"></script>
-  <script type="module" src="../../../@advanced-rest-client/arc-icons/arc-icons.js"></script>
-  <script type="module" src="../../../@polymer/paper-dialog/paper-dialog.js"></script>
-  <script type="module" src="../variables-manager.js"></script>
-  <script type="module" src="./vars-consumer.js"></script>
-
-  <script src="../../../pouchdb/dist/pouchdb.js"></script>
-  <custom-style>
-    <style is="custom-style" include="demo-pages-shared-styles">
-    body,
-    html {
-      background-color: #e5e5e5;
-      height: 100vh;
-      margin: 0;
-      padding: 0;
-      @apply --paper-font-body1;
-    }
-
-    h1 {
-      @apply --paper-font-headline;
-      margin: 0;
-      padding-top: 0.67em;
-    }
-
+  <script src="../node_modules/web-animations-js/web-animations.min.js"></script>
+  <style>
     h2 {
-      @apply --paper-font-title;
+      font-size: 20px;
+      font-weight: 500;
+      line-height: 28px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .env-name {
@@ -66,18 +33,10 @@
       font-weight: 500;
     }
 
-    .card {
-      @apply --shadow-elevation-4dp;
-      padding: 20px;
-      margin-top: 20px;
-      margin-bottom: 20px;
-      box-sizing: border-box;
-      background-color: #fff;
-    }
-
     .form-row {
-      @apply --layout-horizontal;
-      @apply --layout-center;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
     }
 
     .form-row.margin {
@@ -88,274 +47,12 @@
       background-color: #F57C00;
       color: white;
     }
-    </style>
-  </custom-style>
+  </style>
 </head>
-<body unresolved="">
-  <dom-bind id="app">
-    <template>
-      <variables-model></variables-model>
-      <variables-manager></variables-manager>
-      <vars-consumer environment="{{environment}}" environments="{{environments}}" variables="{{variables}}"></vars-consumer>
 
-      <div class="centered">
-        <h1>variables-manager demo</h1>
+<body class="styled">
+  <div id="demo"></div>
+  <script type="module" src="./index.js"></script>
+</body>
 
-        <section class="card">
-          <h2>Current state</h2>
-          <div class="item">
-            <span class="label">Current environment:</span>
-            <span class="value">[[environment]]</span>
-          </div>
-
-          <div class="item">
-            <span class="label">Variables in the environment:</span>
-            <span class="value">[[variables.length]] items</span>
-          </div>
-        </section>
-
-        <section class="card">
-          <h2>Environment options</h2>
-          <div class="form-row">
-            <paper-dropdown-menu name="name" label="Select environment">
-              <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="[[environment]]" id="envSelector">
-                <paper-item value="default">Default</paper-item>
-                <template is="dom-repeat" items="[[environments]]">
-                  <paper-item value$="[[item.name]]">[[item.name]]</paper-item>
-                </template>
-              </paper-listbox>
-            </paper-dropdown-menu>
-            <paper-button on-click="selectEnv" title="Select global environment">Select</paper-button>
-            <paper-button on-click="deleteEnv" title="Delete selected environment">Delete</paper-button>
-            <paper-button on-click="editEnv" title="Edit selected environment">Edit</paper-button>
-          </div>
-          <div class="form-row margin">
-            <paper-input name="name" label="Environment name" id="addInput"></paper-input>
-            <paper-button on-click="addEnv">Add new environment</paper-button>
-          </div>
-        </section>
-
-        <section class="card">
-          <h2>Add variable</h2>
-          <div class="form-row margin">
-            <paper-input name="name" label="Variable name" value="myVariable" id="addVarInput"></paper-input>
-            <paper-input name="value" label="Variable body" value="variable value" id="addVarValueInput"></paper-input>
-            <paper-button on-click="addVar">Add new variable</paper-button>
-          </div>
-        </section>
-
-        <template is="dom-if" if="[[variables]]">
-          <section class="card">
-            <h2>Current variables</h2>
-            <template is="dom-repeat" items="[[variables]]">
-
-              <paper-item>
-                <paper-item-body two-line="">
-                  <div>[[item.variable]]</div>
-                  <div secondary="">[[item.value]]</div>
-                </paper-item-body>
-                <paper-icon-button on-click="delVar" icon="arc:delete"></paper-icon-button>
-                <paper-icon-button on-click="editVar" icon="arc:edit"></paper-icon-button>
-              </paper-item>
-            </template>
-          </section>
-        </template>
-      </div>
-      <paper-dialog id="editVarDialog" modal="" on-iron-overlay-closed="_editDialogClose">
-        <h2>Edit variable</h2>
-        <div>
-          <paper-input name="name" label="Variable name" id="editVarInput"></paper-input>
-          <paper-input name="value" label="Variable body" id="editVarValueInput"></paper-input>
-        </div>
-        <div class="buttons">
-          <paper-button dialog-dismiss="">Cancel</paper-button>
-          <paper-button dialog-confirm="" autofocus="">Save</paper-button>
-        </div>
-      </paper-dialog>
-      <paper-dialog id="editEnvDialog" modal="" on-iron-overlay-closed="_editEnvDialogClose">
-        <h2>Edit variable</h2>
-        <div>
-          <paper-input name="name" label="Environment name" id="editEnvInput"></paper-input>
-        </div>
-        <div class="buttons">
-          <paper-button dialog-dismiss="">Cancel</paper-button>
-          <paper-button dialog-confirm="" autofocus="">Save</paper-button>
-        </div>
-      </paper-dialog>
-      <paper-toast id="delDefault" class="error-toast" text="Default environment cannot be deleted"></paper-toast>
-      <paper-toast id="editDefault" class="error-toast" text="Default environment cannot be edited"></paper-toast>
-      <paper-toast id="programError" class="error-toast" text="This should not happen. It's an error!"></paper-toast>
-      <paper-toast id="noName" class="error-toast" text="Name is required."></paper-toast>
-      <paper-toast id="noDefault" class="error-toast" text="Name cannot be 'default'."></paper-toast>
-      <paper-toast id="envUpdated" text="The environment has been updated"></paper-toast>
-      <paper-toast id="varUpdated" text="The variable has been updated"></paper-toast>
-    </template>
-  </dom-bind>
-  <script type="module">
-    (function(scope) {
-      function selectEnvironment(value) {
-        document.body.dispatchEvent(new CustomEvent('selected-environment-changed', {
-          cancelable: true,
-          bubbles: true,
-          detail: {
-            value
-          }
-        }));
-      }
-      scope.selectEnv = function() {
-        const env = scope.$.envSelector.selected;
-        selectEnvironment(env);
-      };
-
-      scope.deleteEnv = function() {
-        const env = scope.$.envSelector.selected;
-        if (env === 'default') {
-          scope.$.delDefault.opened = true;
-          return;
-        }
-        const item = scope.environments.find((i) => i.name === env);
-        if (!item) {
-          scope.$.programError.opened = true;
-          return;
-        }
-        document.body.dispatchEvent(new CustomEvent('environment-deleted', {
-          cancelable: true,
-          bubbles: true,
-          detail: {
-            id: item._id
-          }
-        }));
-      };
-
-      scope.editEnv = function() {
-        const env = scope.$.envSelector.selected;
-        if (env === 'default') {
-          scope.$.editDefault.opened = true;
-          return;
-        }
-        const item = scope.environments.find((i) => i.name === env);
-        if (!item) {
-          scope.$.programError.opened = true;
-          return;
-        }
-        scope.editedEnv = item;
-        scope.$.editEnvInput.value = item.name;
-        scope.$.editEnvDialog.opened = true;
-      };
-
-      scope._editEnvDialogClose = function(e) {
-        if (e.detail.canceled || !e.detail.confirmed) {
-          scope.editedEnv = undefined;
-          return;
-        }
-        const env = Object.assign({}, scope.editedEnv);
-        scope.editedEnv = undefined;
-        env.name = scope.$.editEnvInput.value;
-        document.body.dispatchEvent(new CustomEvent('environment-updated', {
-          cancelable: true,
-          bubbles: true,
-          detail: {
-            value: env
-          }
-        }));
-      };
-
-      scope.addEnv = function() {
-        const name = scope.$.addInput.value;
-        if (!name) {
-          scope.$.noName.opened = true;
-          return;
-        }
-        if (name === 'default') {
-          scope.$.noDefault.opened = true;
-          return;
-        }
-        document.body.dispatchEvent(new CustomEvent('environment-updated', {
-          cancelable: true,
-          bubbles: true,
-          detail: {
-            value: {
-              name
-            }
-          }
-        }));
-      };
-
-      scope._envUpdatedHandler = function(e) {
-        if (e.cancelable) {
-          return;
-        }
-        selectEnvironment(e.detail.value.name);
-        scope.$.envUpdated.opened = true;
-      };
-
-      scope.addVar = function() {
-        const name = scope.$.addVarInput.value;
-        if (!name) {
-          scope.$.noName.opened = true;
-          return;
-        }
-        const value = scope.$.addVarValueInput.value;
-        const item = {
-          variable: name,
-          environment: scope.environment,
-          value
-        };
-        document.body.dispatchEvent(new CustomEvent('variable-updated', {
-          cancelable: true,
-          bubbles: true,
-          detail: {
-            value: item
-          }
-        }));
-      };
-
-      scope._varUpdatedHandler = function(e) {
-        if (e.cancelable) {
-          return;
-        }
-        scope.$.varUpdated.opened = true;
-      };
-
-      scope.delVar = function(e) {
-        const id = e.model.get('item._id');
-        document.body.dispatchEvent(new CustomEvent('variable-deleted', {
-          cancelable: true,
-          bubbles: true,
-          detail: {
-            id
-          }
-        }));
-      };
-
-      scope.editVar = function(e) {
-        const variable = e.model.get('item');
-        scope.editedVar = variable;
-        scope.$.editVarInput.value = variable.variable;
-        scope.$.editVarValueInput.value = variable.value;
-        scope.$.editVarDialog.opened = true;
-      };
-
-      scope._editDialogClose = function(e) {
-        if (e.detail.canceled || !e.detail.confirmed) {
-          scope.editedVar = undefined;
-          return;
-        }
-        const v = Object.assign({}, scope.editedVar);
-        scope.editedVar = undefined;
-        v.variable = scope.$.editVarInput.value;
-        v.value = scope.$.editVarValueInput.value;
-        document.body.dispatchEvent(new CustomEvent('variable-updated', {
-          cancelable: true,
-          bubbles: true,
-          detail: {
-            value: v
-          }
-        }));
-      };
-      window.addEventListener('environment-updated', scope._envUpdatedHandler);
-      window.addEventListener('variable-updated', scope._varUpdatedHandler);
-    })(document.getElementById('app'));
-    </script>
-  </body>
 </html>
