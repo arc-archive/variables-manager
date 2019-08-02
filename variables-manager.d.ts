@@ -5,16 +5,16 @@
  *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
  *
  * To modify these typings, edit the source file(s):
- *   variables-manager.html
+ *   variables-manager.js
  */
 
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 // tslint:disable:no-any describes the API as best we are able today
 
-/// <reference path="../polymer/types/polymer-element.d.ts" />
-/// <reference path="../polymer/types/lib/utils/render-status.d.ts" />
-/// <reference path="../events-target-behavior/events-target-behavior.d.ts" />
+import {LitElement, html, css} from 'lit-element';
+
+import {EventsTargetMixin} from '@advanced-rest-client/events-target-mixin/events-target-mixin.js';
 
 declare namespace LogicElements {
 
@@ -35,7 +35,7 @@ declare namespace LogicElements {
    * - Update/Delete actions has been moved to `arc-models/variables-model`
    */
   class VariablesManager extends
-    ArcBehaviors.EventsTargetBehavior(
+    EventsTargetMixin(
     Object) {
 
     /**
@@ -49,11 +49,32 @@ declare namespace LogicElements {
      */
     _env: object|null|undefined;
     _vars: any[]|null|undefined;
+    readonly variables: any;
 
     /**
      * List of variables associated with current `environment`.
      */
-    readonly variables: any[]|null|undefined;
+    _variables: any[]|null|undefined;
+    readonly initialized: any;
+
+    /**
+     * A flag to determine of the component is fully initialized.
+     */
+    _initialized: boolean|null|undefined;
+
+    /**
+     * When set it includes system variables into the list of variables.
+     * This should be a map of system variables.
+     */
+    systemVariables: object|null;
+
+    /**
+     * When set the `_sysVars` will not be computed and therefore included
+     * into variables list.
+     */
+    sysVariablesDisabled: boolean|null|undefined;
+    _sysVars: any[]|null|undefined;
+    readonly _model: any;
 
     /**
      * List of variables that overrides all existing variables
@@ -62,33 +83,19 @@ declare namespace LogicElements {
     inMemVariables: any[]|null|undefined;
 
     /**
-     * When set it includes system variables into the list of variables.
-     * This should be a map of system variables.
-     */
-    systemVariables: object|null;
-    readonly _sysVars: any[]|null|undefined;
-
-    /**
-     * A flag to determine of the component is fully initialized.
-     */
-    readonly initialized: boolean|null|undefined;
-
-    /**
-     * When set the `_sysVars` will not be computed and therefore included
-     * into variables list.
-     */
-    sysVariablesDisabled: boolean|null|undefined;
-
-    /**
      * When set the application (local) defined variables are not included.
      */
     appVariablesDisabled: boolean|null|undefined;
+    render(): any;
     connectedCallback(): void;
     _attachListeners(node: any): void;
     _detachListeners(node: any): void;
 
     /**
      * Initializes the element.
+     * It dispatches `environment-current` to ask other managers in the DOM whether
+     * an environment is already selected. If other manager respond then it sets the same
+     * environment. Otherwise it sets `default` environment.
      */
     _initialize(): void;
 
@@ -225,11 +232,14 @@ declare namespace LogicElements {
      */
     _varUpdateActionHandler(e: CustomEvent|null): void;
     _sysVarsChanged(): void;
-    _computeAppVars(record: any, appVariablesDisabled: any): any;
+    _computeAppVars(value: any, appVariablesDisabled: any): any;
     _appVarsChanged(): void;
   }
 }
 
-interface HTMLElementTagNameMap {
-  "variables-manager": LogicElements.VariablesManager;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "variables-manager": LogicElements.VariablesManager;
+  }
 }
