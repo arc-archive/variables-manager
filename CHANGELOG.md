@@ -225,3 +225,7 @@
 
 
 
+# [3.0.0](https://github.com/advanced-rest-client/variables-manager/compare/0.1.16...3.0.0) (2019-08-02)
+
+
+
