@@ -1,7 +1,7 @@
 {
   "name": "@advanced-rest-client/variables-manager",
   "description": "A manager for environments and variables. Non UI element that manages variables state and handle storage",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "license": "Apache-2.0",
   "main": "variables-manager.js",
   "keywords": [
