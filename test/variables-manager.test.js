@@ -1,8 +1,10 @@
 import { fixture, assert, aTimeout } from '@open-wc/testing';
 import { DataGenerator } from '@advanced-rest-client/arc-data-generator/arc-data-generator.js';
 import { VariablesTestHelper } from './helper.js';
-import sinon from 'sinon/pkg/sinon-esm.js';
+import * as sinon from 'sinon/pkg/sinon-esm.js';
 import '../variables-manager.js';
+
+/* eslint-disable require-atomic-updates */
 
 describe('<variables-manager>', function() {
   async function basicFixture() {

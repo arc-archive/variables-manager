@@ -464,6 +464,7 @@ class VariablesManager extends EventsTargetMixin(LitElement) {
         // this may actually happen. Especially on slow IE.
         return;
       }
+      variables.sort(this._varSortFn);
       this._vars = variables;
     } catch (cause) {
       this._handleException(cause);
@@ -728,6 +729,21 @@ class VariablesManager extends EventsTargetMixin(LitElement) {
       return;
     }
     setTimeout(() => this._notifyVarsListChanged());
+  }
+
+  _varSortFn(a, b) {
+    if (!a) {
+      return 1;
+    }
+    if (!b) {
+      return -1;
+    }
+    const aName = String(a.variable);
+    const bName = String(b.variable);
+    return aName.localeCompare(bName, {
+      ignorePunctuation: true,
+      sensitivity: 'base'
+    });
   }
   /**
    * Fired when selected environment has changed.
